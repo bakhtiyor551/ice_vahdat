@@ -1,0 +1,82 @@
+/**
+ * Тема «Ice Kassa» — мягкие пастели, читаемая типографика, акцент ягодный.
+ */
+:root {
+  --ice-font: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ice-radius-sm: 10px;
+  --ice-radius: 16px;
+  --ice-radius-lg: 22px;
+  --ice-shadow: 0 8px 28px rgba(88, 28, 135, 0.08);
+  --ice-shadow-card: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --ice-shadow-elevated: 0 20px 50px -12px rgba(15, 23, 42, 0.12);
+  --ice-ink: #1e1b4b;
+  --ice-ink-muted: #64748b;
+  --ice-cream: #fff7ed;
+  --ice-lavender: #faf5ff;
+  --ice-mint: #ecfdf5;
+  --ice-berry: #c026d3;
+  --ice-berry-soft: #fae8ff;
+  /* Адаптив: отступы и макс. ширина контента на планшетах */
+  --ice-gutter: clamp(12px, 3.5vw, 24px);
+  --ice-content-max: min(1200px, 100%);
+  --ice-tap-min: 44px;
+
+  --ion-font-family: var(--ice-font);
+
+  --ion-color-primary: #7c3aed;
+  --ion-color-primary-rgb: 124, 58, 237;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #6d33d1;
+  --ion-color-primary-tint: #894eef;
+
+  --ion-color-secondary: #ec4899;
+  --ion-color-secondary-rgb: 236, 72, 153;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #d03f86;
+  --ion-color-secondary-tint: #ee5aa3;
+
+  --ion-color-tertiary: #0ea5e9;
+  --ion-color-tertiary-rgb: 14, 165, 233;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #0c91cc;
+  --ion-color-tertiary-tint: #26b1eb;
+
+  --ion-color-success: #10b981;
+  --ion-color-warning: #f59e0b;
+  --ion-color-danger: #ef4444;
+
+  --ion-background-color: #f8fafc;
+  --ion-text-color: var(--ice-ink);
+  --ion-toolbar-background: transparent;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background-color: #eef2ff;
+  background-image:
+    radial-gradient(ellipse 120% 80% at 100% -10%, rgba(196, 181, 253, 0.45) 0%, transparent 55%),
+    radial-gradient(ellipse 90% 60% at -10% 40%, rgba(252, 231, 243, 0.9) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 80% 100%, rgba(209, 250, 229, 0.55) 0%, transparent 45%),
+    linear-gradient(165deg, #fdf4ff 0%, #eef2ff 42%, #ecfdf5 100%);
+  background-attachment: fixed;
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+ion-app {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ice Kassa</string>
+    <string name="title_activity_main">Ice Kassa</string>
+    <string name="package_name">com.ice.vahdat</string>
+    <string name="custom_url_scheme">com.ice.vahdat</string>
+</resources>
