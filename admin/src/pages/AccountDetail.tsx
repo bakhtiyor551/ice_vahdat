@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { formatFixed } from "../format";
+import { ensureArray } from "../guards";
 
 type TxRow = {
   id: string;
@@ -56,7 +57,7 @@ export default function AccountDetail() {
         setBalance(me?.balance ?? null);
 
         const tx = await apiFetch<TxRow[]>(`/admin/accounts/${id}/transactions`, { token });
-        setRows(tx);
+        setRows(ensureArray(tx));
       } catch (e) {
         setErr(e instanceof Error ? e.message : "Ошибка");
       }
@@ -82,7 +83,7 @@ export default function AccountDetail() {
       const me = list.accounts.find((a) => a.id === Number(id));
       setBalance(me?.balance ?? null);
       const tx = await apiFetch<TxRow[]>(`/admin/accounts/${id}/transactions`, { token });
-      setRows(tx);
+      setRows(ensureArray(tx));
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Ошибка");
     }

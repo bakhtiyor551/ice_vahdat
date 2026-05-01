@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { formatFixed } from "../format";
+import { ensureArray } from "../guards";
 
 type Item = {
   product_name: string;
@@ -60,7 +61,7 @@ export default function SaleDetail() {
       <div>
         <h2 className="mb-2 font-semibold">Товары</h2>
         <ul className="space-y-2">
-          {s.items.map((it, i) => (
+          {ensureArray<Item>(s.items).map((it, i) => (
             <li
               key={i}
               className="flex justify-between rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800"

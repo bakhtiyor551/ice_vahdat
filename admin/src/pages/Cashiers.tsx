@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api/client";
 import { formatFixed } from "../format";
+import { ensureArray } from "../guards";
 import { useAuth } from "../context/AuthContext";
 
 type Cashier = {
@@ -27,7 +28,7 @@ export default function Cashiers() {
   const load = async () => {
     if (!token) return;
     const data = await apiFetch<Cashier[]>("/admin/cashiers", { token });
-    setRows(data);
+    setRows(ensureArray(data));
   };
 
   useEffect(() => {

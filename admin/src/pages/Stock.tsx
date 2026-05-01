@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { ensureArray } from "../guards";
 
 type StockItem = {
   id: number;
@@ -36,7 +37,7 @@ export default function Stock() {
   const load = async () => {
     if (!token) return;
     const data = await apiFetch<StockItem[]>("/admin/stock", { token });
-    setItems(data);
+    setItems(ensureArray(data));
   };
 
   useEffect(() => {

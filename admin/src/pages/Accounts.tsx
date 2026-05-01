@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { ensureArray } from "../guards";
 
 type AccountRow = {
   id: number;
@@ -41,7 +42,12 @@ export default function Accounts() {
   const load = async () => {
     if (!token) return;
     const res = await apiFetch<AccRes>("/admin/accounts", { token });
-    setData(res);
+    setData({
+      currency: res.currency ?? "сомони",
+      total_real_balance: res.total_real_balance ?? 0,
+      debt_balance: res.debt_balance ?? 0,
+      accounts: ensureArray(res?.accounts),
+    });
   };
 
   useEffect(() => {

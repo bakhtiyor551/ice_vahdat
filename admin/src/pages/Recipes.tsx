@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { formatFixed } from "../format";
+import { ensureArray } from "../guards";
 import { useAuth } from "../context/AuthContext";
 
 type RecipeRow = {
@@ -58,8 +59,8 @@ export default function Recipes() {
       apiFetch<StockItem[]>("/admin/stock", { token }),
       apiFetch<{ ingredient_units: string[]; recipe_types: string[] }>("/admin/recipes/meta/units", { token }),
     ]);
-    setList(data);
-    setStock(st);
+    setList(ensureArray(data));
+    setStock(ensureArray(st));
     setMeta(m);
   }, [token]);
 
@@ -101,9 +102,10 @@ export default function Recipes() {
       setOutputUnit(r.output_unit);
       setComment(r.comment || "");
       setIsActive(!!r.is_active);
+      const ri = ensureArray<RecipeItem>(r.items);
       setItems(
-        r.items.length
-          ? r.items.map((it) => ({
+        ri.length
+          ? ri.map((it) => ({
               stock_item_id: it.stock_item_id,
               ingredient_name: it.ingredient_name,
               quantity: it.quantity,
@@ -204,7 +206,12 @@ export default function Recipes() {
           output_unit: r.output_unit,
           comment: r.comment,
           is_active: !r.is_active,
-          items: full.items.map((it) => ({
+          items: ensureArray<{
+            stock_item_id: number;
+            ingredient_name: string;
+            quantity: number;
+            unit: string;
+          }>(full.items).map((it) => ({
             stock_item_id: it.stock_item_id,
             ingredient_name: it.ingredient_name,
             quantity: it.quantity,

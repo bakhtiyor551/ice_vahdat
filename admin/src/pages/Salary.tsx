@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { formatFixed } from "../format";
+import { ensureArray } from "../guards";
 
 type SalaryRow = {
   cashier_id: number;
@@ -66,7 +67,10 @@ export default function Salary() {
     if (filterCashier) q.set("cashier_id", filterCashier);
     if (filterStatus) q.set("status", filterStatus);
     const res = await apiFetch<SalaryListRes>(`/admin/salary?${q.toString()}`, { token });
-    setData(res);
+    setData({
+      ...res,
+      cashiers: ensureArray(res?.cashiers),
+    });
   }, [token, month, filterCashier, filterStatus]);
 
   useEffect(() => {
@@ -84,7 +88,11 @@ export default function Salary() {
   useEffect(() => {
     if (!token) return;
     void apiFetch<{ id: number; name: string }[]>("/admin/cashiers", { token })
-      .then((rows) => setCashierOptions(rows.map((c) => ({ id: c.id, name: c.name }))))
+      .then((rows) =>
+        setCashierOptions(
+          ensureArray<{ id: number; name: string }>(rows).map((c) => ({ id: c.id, name: c.name }))
+        )
+      )
       .catch(() => {});
   }, [token]);
 

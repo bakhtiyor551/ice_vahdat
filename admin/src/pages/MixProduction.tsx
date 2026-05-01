@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { formatFixed } from "../format";
+import { ensureArray } from "../guards";
 
 type RecipeRow = {
   id: number;
@@ -26,7 +27,7 @@ export default function MixProduction() {
   const load = async () => {
     if (!token) return;
     const data = await apiFetch<RecipeRow[]>("/admin/recipes", { token });
-    setList(data.filter((r) => r.is_active));
+    setList(ensureArray<RecipeRow>(data).filter((r) => r.is_active));
   };
 
   useEffect(() => {

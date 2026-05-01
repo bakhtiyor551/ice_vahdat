@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { ensureArray } from "../guards";
 
 type Product = {
   id: number;
@@ -56,9 +57,10 @@ export default function Products() {
       apiFetch<{ id: number; name: string }[]>("/admin/recipes", { token }),
       apiFetch<StockItem[]>("/admin/stock", { token }),
     ]);
-    setRows(data);
-    setRecipes(rec.map((r) => ({ id: r.id, name: r.name })));
-    setStock(st);
+    const recipes = ensureArray<{ id: number; name: string }>(rec);
+    setRows(ensureArray(data));
+    setRecipes(recipes.map((r) => ({ id: r.id, name: r.name })));
+    setStock(ensureArray(st));
   };
 
   useEffect(() => {
@@ -96,9 +98,15 @@ export default function Products() {
 
     if (!token) return;
     try {
-      const pi = await apiFetch<
+      const piRaw = await apiFetch<
         { stock_item_id: number; quantity: number; unit: string; ingredient_name: string | null }[]
       >(`/admin/products/${p.id}/portion-items`, { token });
+      const pi = ensureArray<{
+        stock_item_id: number;
+        quantity: number;
+        unit: string;
+        ingredient_name: string | null;
+      }>(piRaw);
       if (pi.length) {
         setPortions(
           pi.map((x) => ({

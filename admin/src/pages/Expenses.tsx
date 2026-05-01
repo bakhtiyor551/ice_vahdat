@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { formatFixed } from "../format";
+import { ensureArray } from "../guards";
 
 type ExpRow = {
   id: string;
@@ -37,7 +38,7 @@ export default function Expenses() {
     void (async () => {
       try {
         const c = await apiFetch<string[]>("/admin/expense-categories", { token });
-        setCats(c);
+        setCats(ensureArray<string>(c));
         setCategory((prev) => prev || c[0] || "");
       } catch {
         /* ignore */
@@ -50,7 +51,7 @@ export default function Expenses() {
     void (async () => {
       try {
         const data = await apiFetch<ExpRow[]>(`/admin/expenses?preset=${preset}`, { token });
-        setRows(data);
+        setRows(ensureArray(data));
         setErr(null);
       } catch (e) {
         setErr(e instanceof Error ? e.message : "Ошибка");
@@ -75,7 +76,7 @@ export default function Expenses() {
       setAmount("");
       setComment("");
       const data = await apiFetch<ExpRow[]>(`/admin/expenses?preset=${preset}`, { token });
-      setRows(data);
+      setRows(ensureArray(data));
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Ошибка");
     } finally {

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { formatFixed } from "../format";
+import { ensureArray } from "../guards";
 
 type SaleRow = {
   id: string;
@@ -32,7 +33,7 @@ export default function Sales() {
     void (async () => {
       try {
         const data = await apiFetch<SaleRow[]>(`/admin/orders?preset=${preset}`, { token });
-        setRows(data);
+        setRows(ensureArray(data));
         setErr(null);
       } catch (e) {
         setErr(e instanceof Error ? e.message : "Ошибка");

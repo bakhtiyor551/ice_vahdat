@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { formatFixed } from "../format";
+import { ensureArray } from "../guards";
 
 type PayRow = {
   id: string;
@@ -78,7 +79,13 @@ export default function SalaryDetail() {
       `/admin/salary/${cashierId}?month=${encodeURIComponent(month)}`,
       { token }
     );
-    setData(d);
+    setData({
+      ...d,
+      work_dates: ensureArray(d.work_dates),
+      work_dates_auto: ensureArray(d.work_dates_auto),
+      work_dates_manual: ensureArray(d.work_dates_manual),
+      payments: ensureArray(d.payments),
+    });
     setEditManual(false);
     setPicked(new Set());
   }, [token, cashierId, month]);

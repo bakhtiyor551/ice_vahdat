@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { apiDownloadBlob, apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { formatFixed, safeNum } from "../format";
+import { ensureArray, ensurePaymentMap } from "../guards";
 
 type Preset = "today" | "yesterday" | "week" | "month" | "custom";
 
@@ -154,8 +155,8 @@ export default function Report() {
       apiFetch<CashierOpt[]>("/admin/cashiers", { token }),
       apiFetch<ProductOpt[]>("/admin/products", { token }),
     ]);
-    setCashiers(cList);
-    setProducts(pList);
+    setCashiers(ensureArray(cList));
+    setProducts(ensureArray(pList));
   }, [token]);
 
   const loadReport = useCallback(async () => {
@@ -175,12 +176,17 @@ export default function Report() {
         apiFetch<StockRes>(`${base}/stock${qs}`, { token }),
       ]);
       setSummary(sum);
-      setPayments(pay);
-      setProductsR(pr);
-      setExpenses(ex);
-      setCashiersR(ca);
-      setAccounts(acc);
-      setStock(st);
+      setPayments({
+        currency: pay && typeof pay === "object" && "currency" in pay && typeof (pay as PaymentsRes).currency === "string"
+          ? (pay as PaymentsRes).currency
+          : "сомони",
+        payments: ensurePaymentMap((pay as PaymentsRes)?.payments),
+      });
+      setProductsR({ products: ensureArray((pr as ProductsRes)?.products) });
+      setExpenses({ by_category: ensureArray((ex as ExpensesRes)?.by_category) });
+      setCashiersR({ cashiers: ensureArray((ca as CashiersRes)?.cashiers) });
+      setAccounts({ accounts: ensureArray((acc as AccountsRes)?.accounts) });
+      setStock({ packaging: ensureArray((st as StockRes)?.packaging) });
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
@@ -442,7 +448,7 @@ export default function Report() {
             <section>
               <h2 className="mb-2 font-semibold">По оплатам</h2>
               <ul className="space-y-1 rounded-2xl border border-slate-200 bg-white p-3 text-sm dark:border-slate-700 dark:bg-slate-900">
-                {Object.entries(payments.payments).map(([k, v]) => (
+                {Object.entries(payments.payments ?? {}).map(([k, v]) => (
                   <li key={k} className="flex justify-between">
                     <span>{PAYMENT_LABEL[k] || k}</span>
                     <span className="font-medium">

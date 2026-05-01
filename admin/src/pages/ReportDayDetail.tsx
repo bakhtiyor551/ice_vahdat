@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { formatFixed } from "../format";
+import { ensureArray, ensurePaymentMap } from "../guards";
 
 type OrderRow = {
   id: string;
@@ -67,7 +68,22 @@ export default function ReportDayDetail() {
           `/admin/reports/day-detail?date=${encodeURIComponent(dateParam)}`,
           { token }
         );
-        setData(d);
+        setData({
+          ...d,
+          summary: {
+            revenue: d.summary?.revenue ?? 0,
+            expenses: d.summary?.expenses ?? 0,
+            profit: d.summary?.profit ?? 0,
+            order_count: d.summary?.order_count ?? 0,
+            avg_check: d.summary?.avg_check ?? 0,
+            debt_sales_total: d.summary?.debt_sales_total ?? 0,
+          },
+          payments: ensurePaymentMap(d.payments),
+          products: ensureArray(d.products),
+          cashiers: ensureArray(d.cashiers),
+          orders: ensureArray(d.orders),
+          expenses: ensureArray(d.expenses),
+        });
       } catch {
         setData(null);
       } finally {
@@ -134,7 +150,7 @@ export default function ReportDayDetail() {
       <section>
         <h2 className="mb-2 font-semibold">Итог по оплатам</h2>
         <ul className="rounded-2xl border border-slate-200 p-3 text-sm dark:border-slate-700">
-          {Object.entries(data.payments).map(([k, v]) => (
+          {Object.entries(data.payments ?? {}).map(([k, v]) => (
             <li key={k} className="flex justify-between py-0.5">
               <span>{PAYMENT_LABEL[k] || k}</span>
               <span>
@@ -195,9 +211,9 @@ export default function ReportDayDetail() {
                 </span>
               </div>
               <div className="text-xs text-slate-500">Кассир: {o.cashier_name || "—"}</div>
-              {o.items?.length ? (
+              {ensureArray<{ product_name: string; quantity: number; total: number }>(o.items).length ? (
                 <ul className="mt-2 space-y-0.5 border-t border-slate-100 pt-2 dark:border-slate-800">
-                  {o.items.map((it, i) => (
+                  {ensureArray<{ product_name: string; quantity: number; total: number }>(o.items).map((it, i) => (
                     <li key={i} className="flex justify-between">
                       <span>
                         {it.product_name} ×{it.quantity}
