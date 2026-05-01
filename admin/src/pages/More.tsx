@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const links = [
   { to: "/report", label: "Отчёт", desc: "Выручка, расходы, товары, кассиры, Excel" },
@@ -13,6 +14,8 @@ const links = [
 ];
 
 export default function More() {
+  const { logout } = useAuth();
+
   return (
     <div className="space-y-3">
       <h1 className="text-xl font-bold">Ещё</h1>
@@ -30,6 +33,14 @@ export default function More() {
         ))}
       </ul>
       <p className="text-xs text-slate-400">Excel — в разделе «Отчёт», кнопка «Скачать Excel».</p>
+
+      <button
+        type="button"
+        onClick={() => logout()}
+        className="w-full rounded-xl border border-expense py-3 font-medium text-expense dark:border-red-800 dark:text-red-400"
+      >
+        Выйти
+      </button>
     </div>
   );
 }
