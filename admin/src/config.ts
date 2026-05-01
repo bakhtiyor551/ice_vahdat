@@ -1,8 +1,7 @@
 /**
- * В `npm run dev` без VITE_API_URL — относительные пути и прокси Vite → backend (без CORS).
- * Если страница открыта по HTTPS (например Telegram Mini App), а VITE_API_URL — `http://...`, браузер
- * заблокирует fetch (mixed content). Тогда сбрасываем base на «тот же origin», чтобы запросы
- * шли на прокси dev/preview. Для продакшена задайте `VITE_API_URL` с `https://...`.
+ * Dev: без VITE_API_URL — относительные пути → прокси Vite на backend (порт 3847).
+ * Prod: без VITE_API_URL — префикс `/api` (тот же хост, nginx проксирует /api на Node).
+ * Явно задайте VITE_API_URL при сборке, если API на другом домене или без префикса /api.
  */
 function isHttpUrl(s: string): boolean {
   try {
@@ -14,9 +13,25 @@ function isHttpUrl(s: string): boolean {
 
 function resolveApiBase(): string {
   const explicit = import.meta.env.VITE_API_URL?.trim();
-  const fallbackProd = "http://localhost:3847";
-  let base = explicit || (import.meta.env.DEV ? "" : fallbackProd);
 
+  if (import.meta.env.DEV) {
+    const base = explicit ?? "";
+    if (
+      typeof window !== "undefined" &&
+      window.location.protocol === "https:" &&
+      base &&
+      isHttpUrl(base)
+    ) {
+      console.warn(
+        "[admin] HTTPS + HTTP API (mixed content). Задайте VITE_API_URL=https://… или откройте по HTTP.",
+      );
+      return "";
+    }
+    return base;
+  }
+
+  // production build
+  const base = explicit || "/api";
   if (
     typeof window !== "undefined" &&
     window.location.protocol === "https:" &&
@@ -24,7 +39,7 @@ function resolveApiBase(): string {
     isHttpUrl(base)
   ) {
     console.warn(
-      "[admin] HTTPS-страница + HTTP API (mixed content). Запросы идут относительно текущего origin; задайте VITE_API_URL=https://… или откройте админку по HTTP.",
+      "[admin] HTTPS + HTTP API (mixed content). Пересоберите с VITE_API_URL=https://vahdatice.fit/api",
     );
     return "";
   }
