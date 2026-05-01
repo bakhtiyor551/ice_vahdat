@@ -77,23 +77,34 @@ function insertSaleFromPayload(body, cashierId) {
   return { duplicate: false, id };
 }
 
-salesRouter.post("/", (req, res) => {
+salesRouter.post("/", async (req, res) => {
   try {
     const cashierId = req.user.sub;
     const result = insertSaleFromPayload(req.body, cashierId);
+    let telegram = null;
     if (!result.duplicate) {
       const name = db.prepare("SELECT name FROM cashiers WHERE id = ?").get(cashierId)?.name || "";
       const receipt = formatSaleReceipt(req.body, name);
-      void sendTelegramMessage(receipt).then((r) => {
-        if (r.ok) {
-          console.log("[telegram] чек продажи отправлен", { local_id: req.body?.local_id });
-          return;
-        }
-        if (r.skipped) console.warn("[telegram] чек не отправлен:", r.reason);
-        else console.error("[telegram] чек не отправлен:", r.error ?? r.data);
-      });
+      telegram = await sendTelegramMessage(receipt);
+      if (telegram.ok) {
+        console.log("[telegram] чек продажи отправлен", { local_id: req.body?.local_id });
+      } else if (telegram.skipped) {
+        console.warn("[telegram] чек не отправлен:", telegram.reason);
+      } else {
+        console.error("[telegram] чек не отправлен:", telegram.error ?? telegram.data);
+      }
     }
-    res.status(result.duplicate ? 200 : 201).json({ id: result.id, duplicate: result.duplicate });
+
+    const body = { id: result.id, duplicate: result.duplicate };
+    if (!result.duplicate && telegram) {
+      body.telegram_sent = telegram.ok;
+      if (!telegram.ok) {
+        body.telegram_error = telegram.skipped
+          ? "missing_env"
+          : String(telegram.data?.description || telegram.error || "send_failed");
+      }
+    }
+    res.status(result.duplicate ? 200 : 201).json(body);
   } catch (e) {
     console.error(e);
     res.status(400).json({ error: String(e.message || e) });

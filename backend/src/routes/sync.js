@@ -8,7 +8,7 @@ import { insertExpenseFromPayload } from "./expenses.js";
 export const syncRouter = Router();
 syncRouter.use(authMiddleware);
 
-syncRouter.post("/push", (req, res) => {
+syncRouter.post("/push", async (req, res) => {
   const cashierId = req.user.sub;
   const items = Array.isArray(req.body?.items) ? req.body.items : [];
   const results = [];
@@ -20,18 +20,38 @@ syncRouter.post("/push", (req, res) => {
       if (type === "sale") {
         const full = { ...payload, local_id: payload.local_id || row.entity_id };
         const r = insertSaleFromPayload(full, cashierId);
+        let telegram = null;
         if (!r.duplicate) {
           const name = db.prepare("SELECT name FROM cashiers WHERE id = ?").get(cashierId)?.name || "";
-          void sendTelegramMessage(formatSaleReceipt(full, name));
+          telegram = await sendTelegramMessage(formatSaleReceipt(full, name));
         }
-        results.push({ entity_type: type, entity_id: row.entity_id, ok: true, duplicate: r.duplicate, id: r.id });
+        const rowResult = { entity_type: type, entity_id: row.entity_id, ok: true, duplicate: r.duplicate, id: r.id };
+        if (!r.duplicate && telegram) {
+          rowResult.telegram_sent = telegram.ok;
+          if (!telegram.ok) {
+            rowResult.telegram_error = telegram.skipped
+              ? "missing_env"
+              : String(telegram.data?.description || telegram.error || "send_failed");
+          }
+        }
+        results.push(rowResult);
       } else if (type === "expense") {
         const full = { ...payload, local_id: payload.local_id || row.entity_id };
         const r = insertExpenseFromPayload(full, cashierId);
+        let telegram = null;
         if (!r.duplicate) {
-          void sendTelegramMessage(formatExpenseReceipt(full));
+          telegram = await sendTelegramMessage(formatExpenseReceipt(full));
         }
-        results.push({ entity_type: type, entity_id: row.entity_id, ok: true, duplicate: r.duplicate, id: r.id });
+        const rowResult = { entity_type: type, entity_id: row.entity_id, ok: true, duplicate: r.duplicate, id: r.id };
+        if (!r.duplicate && telegram) {
+          rowResult.telegram_sent = telegram.ok;
+          if (!telegram.ok) {
+            rowResult.telegram_error = telegram.skipped
+              ? "missing_env"
+              : String(telegram.data?.description || telegram.error || "send_failed");
+          }
+        }
+        results.push(rowResult);
       } else {
         results.push({ entity_type: type, entity_id: row.entity_id, ok: false, error: "unknown entity_type" });
       }
