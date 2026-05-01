@@ -24,6 +24,14 @@ export async function apiFetch<T = unknown>(
   }
   const res = await fetch(url, { ...rest, headers });
   const text = await res.text();
+  const looksLikeHtml = /^\s*</.test(text);
+
+  if (res.ok && looksLikeHtml) {
+    throw new Error(
+      "Сервер вернул HTML вместо JSON — запрос не дошёл до API Node. Нужен nginx: location /api/ → proxy_pass на бэкенд; при сборке админки задайте VITE_API_URL=https://ваш-домен/api (или оставьте префикс /api по умолчанию)."
+    );
+  }
+
   let data: unknown;
   try {
     data = text ? JSON.parse(text) : null;

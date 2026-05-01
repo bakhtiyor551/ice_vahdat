@@ -30,7 +30,7 @@ function resolveApiBase(): string {
     return base;
   }
 
-  // production build
+  // production: не используйте пустой base — иначе fetch пойдёт на /admin/... и nginx отдаст HTML SPA вместо JSON
   const base = explicit || "/api";
   if (
     typeof window !== "undefined" &&
@@ -39,9 +39,9 @@ function resolveApiBase(): string {
     isHttpUrl(base)
   ) {
     console.warn(
-      "[admin] HTTPS + HTTP API (mixed content). Пересоберите с VITE_API_URL=https://vahdatice.fit/api",
+      "[admin] HTTPS страница + HTTP в VITE_API_URL — запросы идут на /api (прокси nginx на Node). Задайте https://ваш-домен/api в .env при сборке.",
     );
-    return "";
+    return "/api";
   }
   return base;
 }
