@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../api/client";
+import { formatFixed } from "../format";
 import { useAuth } from "../context/AuthContext";
 
 type RecipeRow = {
@@ -251,7 +252,7 @@ export default function Recipes() {
             <div className="min-w-0">
               <div className="font-semibold">{r.name}</div>
               <div className="text-xs text-slate-500">
-                {r.type} · выход {r.output_quantity} {r.output_unit} · ~{r.batch_cost_estimate.toFixed(2)} сом (партия) ·{" "}
+                {r.type} · выход {r.output_quantity} {r.output_unit} · ~{formatFixed(r.batch_cost_estimate, 2)} сом (партия) ·{" "}
                 {r.is_active ? (
                   <span className="text-income">активен</span>
                 ) : (

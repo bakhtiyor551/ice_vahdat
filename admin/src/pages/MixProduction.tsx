@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { formatFixed } from "../format";
 
 type RecipeRow = {
   id: number;
@@ -64,7 +65,7 @@ export default function MixProduction() {
         }
       );
       setOkMsg(
-        `Партия #${res.production_id}: списано по себестоимости ~${res.total_cost} сом. Остаток готовой смеси: ${res.mix_quantity.toFixed(2)}`
+        `Партия #${res.production_id}: списано по себестоимости ~${res.total_cost} сом. Остаток готовой смеси: ${formatFixed(res.mix_quantity, 2)}`
       );
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Ошибка");

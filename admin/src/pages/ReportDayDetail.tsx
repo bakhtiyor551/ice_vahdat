@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { formatFixed } from "../format";
 
 type OrderRow = {
   id: string;
@@ -106,27 +107,27 @@ export default function ReportDayDetail() {
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         <div className="rounded-xl bg-income-muted p-2 dark:bg-emerald-950/40">
           <div className="text-xs text-slate-600">Выручка</div>
-          <div className="font-bold text-income">{data.summary.revenue.toFixed(0)}</div>
+          <div className="font-bold text-income">{formatFixed(data.summary.revenue, 0)}</div>
         </div>
         <div className="rounded-xl bg-expense-muted p-2 dark:bg-red-950/40">
           <div className="text-xs">Расходы</div>
-          <div className="font-bold text-expense">{data.summary.expenses.toFixed(0)}</div>
+          <div className="font-bold text-expense">{formatFixed(data.summary.expenses, 0)}</div>
         </div>
         <div className="rounded-xl bg-info-muted p-2 dark:bg-blue-950/40">
           <div className="text-xs">Прибыль</div>
-          <div className="font-bold">{data.summary.profit.toFixed(0)}</div>
+          <div className="font-bold">{formatFixed(data.summary.profit, 0)}</div>
         </div>
         <div className="rounded-xl border border-slate-200 p-2 dark:border-slate-700">
           <div className="text-xs text-slate-500">Заказы</div>
-          <div className="font-bold">{data.summary.order_count}</div>
+          <div className="font-bold">{data.summary.order_count ?? 0}</div>
         </div>
         <div className="rounded-xl border border-slate-200 p-2 dark:border-slate-700">
           <div className="text-xs text-slate-500">Средний чек</div>
-          <div className="font-bold">{data.summary.avg_check.toFixed(2)}</div>
+          <div className="font-bold">{formatFixed(data.summary.avg_check, 2)}</div>
         </div>
         <div className="rounded-xl border border-warn/30 bg-warn-muted p-2 dark:bg-amber-950/30">
           <div className="text-xs text-warn">Долги</div>
-          <div className="font-bold">{data.summary.debt_sales_total.toFixed(0)}</div>
+          <div className="font-bold">{formatFixed(data.summary.debt_sales_total, 0)}</div>
         </div>
       </div>
 
@@ -137,7 +138,7 @@ export default function ReportDayDetail() {
             <li key={k} className="flex justify-between py-0.5">
               <span>{PAYMENT_LABEL[k] || k}</span>
               <span>
-                {v.toFixed(0)} {cur}
+                {formatFixed(v, 0)} {cur}
               </span>
             </li>
           ))}
@@ -160,7 +161,7 @@ export default function ReportDayDetail() {
                 <tr key={p.product_name} className="border-t border-slate-100 dark:border-slate-800">
                   <td className="px-2 py-2">{p.product_name}</td>
                   <td className="px-2 py-2">{p.qty}</td>
-                  <td className="px-2 py-2">{p.sum_total.toFixed(0)}</td>
+                  <td className="px-2 py-2">{formatFixed(p.sum_total, 0)}</td>
                 </tr>
               ))}
             </tbody>
@@ -175,8 +176,8 @@ export default function ReportDayDetail() {
             <li key={c.name} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
               <div className="font-medium">{c.name}</div>
               <div>Заказы: {c.orders}</div>
-              <div>Продажи: {c.sales_sum.toFixed(0)} {cur}</div>
-              <div>Расходы: {c.expenses_sum.toFixed(0)} {cur}</div>
+              <div>Продажи: {formatFixed(c.sales_sum, 0)} {cur}</div>
+              <div>Расходы: {formatFixed(c.expenses_sum, 0)} {cur}</div>
             </li>
           ))}
         </ul>
@@ -190,7 +191,7 @@ export default function ReportDayDetail() {
               <div className="flex flex-wrap justify-between gap-1">
                 <span className="text-slate-500">{new Date(o.created_at).toLocaleString()}</span>
                 <span className="font-semibold">
-                  {o.total_amount.toFixed(0)} {cur} · {PAYMENT_LABEL[o.payment_type] || o.payment_type}
+                  {formatFixed(o.total_amount, 0)} {cur} · {PAYMENT_LABEL[o.payment_type] || o.payment_type}
                 </span>
               </div>
               <div className="text-xs text-slate-500">Кассир: {o.cashier_name || "—"}</div>
@@ -201,7 +202,7 @@ export default function ReportDayDetail() {
                       <span>
                         {it.product_name} ×{it.quantity}
                       </span>
-                      <span>{it.total.toFixed(0)}</span>
+                      <span>{formatFixed(it.total, 0)}</span>
                     </li>
                   ))}
                 </ul>
@@ -220,7 +221,7 @@ export default function ReportDayDetail() {
                 {e.category} · {e.cashier_name || "—"}
               </span>
               <span className="font-medium text-expense">
-                −{e.amount.toFixed(0)} {cur}
+                −{formatFixed(e.amount, 0)} {cur}
               </span>
               <span className="w-full text-xs text-slate-500">{new Date(e.created_at).toLocaleString()}</span>
             </li>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { formatFixed } from "../format";
 
 type TxRow = {
   id: string;
@@ -97,7 +98,7 @@ export default function AccountDetail() {
       <h1 className="text-xl font-bold">{accName}</h1>
       {balance != null && (
         <p className="text-lg font-semibold text-income">
-          Текущий баланс: {balance.toFixed(2)} сомони
+          Текущий баланс: {formatFixed(balance, 2)} сомони
         </p>
       )}
 
@@ -150,7 +151,7 @@ export default function AccountDetail() {
                   <td className="px-2 py-2">{KIND_RU[t.kind] ?? t.kind}</td>
                   <td className={`px-2 py-2 font-medium ${rowColorClass(t.kind, t.direction)}`}>
                     {t.direction === "in" ? "+" : "−"}
-                    {t.amount.toFixed(2)}
+                    {formatFixed(t.amount, 2)}
                   </td>
                   <td className="max-w-[200px] truncate px-2 py-2 text-slate-600" title={t.comment ?? ""}>
                     {t.comment ?? "—"}

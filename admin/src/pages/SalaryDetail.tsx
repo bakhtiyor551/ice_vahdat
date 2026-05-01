@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { formatFixed } from "../format";
 
 type PayRow = {
   id: string;
@@ -198,13 +199,13 @@ export default function SalaryDetail() {
             <div className="mt-1">
               Начислено:{" "}
               <span className="font-semibold text-income">
-                {data.accrued.toFixed(0)} {cur}
+                {formatFixed(data.accrued, 0)} {cur}
               </span>
             </div>
-            <div>Оплачено: <span className="font-semibold">{data.paid.toFixed(0)} {cur}</span></div>
+            <div>Оплачено: <span className="font-semibold">{formatFixed(data.paid, 0)} {cur}</span></div>
             <div>
               Остаток:{" "}
-              <span className="font-semibold text-warn">{data.balance.toFixed(0)} {cur}</span>
+              <span className="font-semibold text-warn">{formatFixed(data.balance, 0)} {cur}</span>
             </div>
             <div className="mt-2 text-xs text-slate-500">
               Статус: {STATUS_LABEL[data.status] || data.status}
@@ -376,7 +377,7 @@ export default function SalaryDetail() {
                   {data.payments.map((p) => (
                     <tr key={p.id} className="border-t border-slate-100 dark:border-slate-800">
                       <td className="whitespace-nowrap px-2 py-2">{new Date(p.paid_at).toLocaleString()}</td>
-                      <td className="px-2 py-2">{p.amount.toFixed(0)}</td>
+                      <td className="px-2 py-2">{formatFixed(p.amount, 0)}</td>
                       <td className="px-2 py-2">{p.account_name}</td>
                       <td className="px-2 py-2">{p.comment || "—"}</td>
                       <td className="px-2 py-2 text-xs">{p.paid_by || "—"}</td>

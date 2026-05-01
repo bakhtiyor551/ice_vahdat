@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiDownloadBlob, apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { formatFixed, safeNum } from "../format";
 
 type Preset = "today" | "yesterday" | "week" | "month" | "custom";
 
@@ -387,24 +388,24 @@ export default function Report() {
             <div className="rounded-2xl border border-income/30 bg-income-muted p-3 dark:bg-emerald-950/40">
               <div className="text-xs uppercase text-slate-600 dark:text-slate-400">Выручка</div>
               <div className="text-lg font-bold text-income">
-                {summary.revenue.toFixed(0)} {cur}
+                {formatFixed(summary.revenue, 0)} {cur}
               </div>
             </div>
             <div className="rounded-2xl border border-expense/30 bg-expense-muted p-3 dark:bg-red-950/40">
               <div className="text-xs uppercase text-slate-600">Расходы (касса)</div>
               <div className="text-lg font-bold text-expense">
-                {summary.expenses.toFixed(0)} {cur}
+                {formatFixed(summary.expenses, 0)} {cur}
               </div>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
               <div className="text-xs uppercase text-slate-500">Зарплата (выплачено)</div>
               <div className="text-lg font-bold">
-                {(summary.salary_paid ?? 0).toFixed(0)} {cur}
+                {formatFixed(summary.salary_paid, 0)} {cur}
               </div>
             </div>
             <div className="rounded-2xl border border-info/30 bg-info-muted p-3 dark:bg-blue-950/40">
               <div className="text-xs uppercase text-slate-600">Прибыль</div>
-              <div className="text-lg font-bold">{summary.profit.toFixed(0)} {cur}</div>
+              <div className="text-lg font-bold">{formatFixed(summary.profit, 0)} {cur}</div>
               <div className="mt-1 text-[10px] text-slate-500">
                 Выручка − расходы − зарплата
               </div>
@@ -416,13 +417,13 @@ export default function Report() {
             <div className="rounded-2xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
               <div className="text-xs uppercase text-slate-500">Средний чек</div>
               <div className="text-lg font-bold">
-                {summary.avg_check.toFixed(2)} {cur}
+                {formatFixed(summary.avg_check, 2)} {cur}
               </div>
             </div>
             <div className="rounded-2xl border border-warn/30 bg-warn-muted p-3 dark:bg-amber-950/30">
               <div className="text-xs uppercase text-warn">Долги</div>
               <div className="text-lg font-bold text-warn">
-                {summary.debt_sales_total.toFixed(0)} {cur}
+                {formatFixed(summary.debt_sales_total, 0)} {cur}
               </div>
             </div>
           </div>
@@ -432,7 +433,7 @@ export default function Report() {
             <div className="mt-1 text-slate-600 dark:text-slate-400">
               Наличные + карта + перевод:{" "}
               <span className="font-bold text-slate-900 dark:text-white">
-                {summary.net_cash_card_transfer.toFixed(0)} {cur}
+                {formatFixed(summary.net_cash_card_transfer, 0)} {cur}
               </span>
             </div>
           </div>
@@ -445,7 +446,7 @@ export default function Report() {
                   <li key={k} className="flex justify-between">
                     <span>{PAYMENT_LABEL[k] || k}</span>
                     <span className="font-medium">
-                      {v.toFixed(0)} {cur}
+                      {formatFixed(v, 0)} {cur}
                     </span>
                   </li>
                 ))}
@@ -471,7 +472,7 @@ export default function Report() {
                         <td className="px-3 py-2">{r.product_name}</td>
                         <td className="px-3 py-2">{r.qty}</td>
                         <td className="px-3 py-2">
-                          {r.sum_total.toFixed(0)} {cur}
+                          {formatFixed(r.sum_total, 0)} {cur}
                         </td>
                       </tr>
                     ))}
@@ -498,7 +499,7 @@ export default function Report() {
                       <tr key={r.category} className="border-t border-slate-100 dark:border-slate-800">
                         <td className="px-3 py-2">{r.category}</td>
                         <td className="px-3 py-2">
-                          {r.sum_amount.toFixed(0)} {cur}
+                          {formatFixed(r.sum_amount, 0)} {cur}
                         </td>
                         <td className="px-3 py-2">{r.cnt}</td>
                       </tr>
@@ -525,13 +526,13 @@ export default function Report() {
                     <div>
                       Продажи:{" "}
                       <span className="font-medium text-income">
-                        {c.sales_sum.toFixed(0)} {cur}
+                        {formatFixed(c.sales_sum, 0)} {cur}
                       </span>
                     </div>
                     <div>
                       Расходы:{" "}
                       <span className="font-medium text-expense">
-                        {c.expenses_sum.toFixed(0)} {cur}
+                        {formatFixed(c.expenses_sum, 0)} {cur}
                       </span>
                     </div>
                   </li>
@@ -555,20 +556,20 @@ export default function Report() {
                     </div>
                     <div className="mt-1 space-y-0.5 text-slate-600 dark:text-slate-400">
                       <div>
-                        + продажи: {a.period.sales_in.toFixed(0)} {cur}
+                        + продажи: {formatFixed(a.period?.sales_in, 0)} {cur}
                       </div>
                       <div>
-                        − расходы: {a.period.expenses_out.toFixed(0)} {cur}
+                        − расходы: {formatFixed(a.period?.expenses_out, 0)} {cur}
                       </div>
-                      {a.period.transfer_in + a.period.transfer_out > 0 && (
+                      {safeNum(a.period?.transfer_in) + safeNum(a.period?.transfer_out) > 0 && (
                         <div>
-                          Переводы: +{a.period.transfer_in.toFixed(0)} / −{a.period.transfer_out.toFixed(0)}
+                          Переводы: +{formatFixed(a.period?.transfer_in, 0)} / −{formatFixed(a.period?.transfer_out, 0)}
                         </div>
                       )}
                       <div className="font-medium text-slate-900 dark:text-white">
-                        Изменение за период: {a.period.net_change.toFixed(0)} {cur}
+                        Изменение за период: {formatFixed(a.period?.net_change, 0)} {cur}
                       </div>
-                      <div className="text-xs">Текущий баланс: {a.current_balance.toFixed(0)} {cur}</div>
+                      <div className="text-xs">Текущий баланс: {formatFixed(a.current_balance, 0)} {cur}</div>
                     </div>
                   </li>
                 ))}

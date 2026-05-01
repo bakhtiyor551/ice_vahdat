@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { formatFixed } from "../format";
 
 type ExpRow = {
   id: string;
@@ -161,7 +162,7 @@ export default function Expenses() {
           >
             <div className="flex justify-between font-semibold">
               <span>{r.category}</span>
-              <span className="text-expense">{r.amount.toFixed(0)} сом</span>
+              <span className="text-expense">{formatFixed(r.amount, 0)} сом</span>
             </div>
             <div className="mt-1 text-xs text-slate-500">
               {r.cashier_name || "—"} · {payLabels[r.payment_type] || r.payment_type}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { formatFixed } from "../format";
 
 type Dash = {
   revenue: number;
@@ -35,14 +36,14 @@ export default function Dashboard() {
   if (!d) return <p className="text-slate-500">Загрузка…</p>;
 
   const cards = [
-    { label: "Выручка сегодня", value: `${d.revenue.toFixed(0)} сом`, tone: "income" as const },
-    { label: "Расходы сегодня", value: `${d.expenses.toFixed(0)} сом`, tone: "expense" as const },
-    { label: "Чистая прибыль", value: `${d.profit.toFixed(0)} сом`, tone: "income" as const },
-    { label: "Заказов", value: String(d.order_count), tone: "info" as const },
-    { label: "Наличные", value: `${d.cash.toFixed(0)} сом`, tone: "info" as const },
-    { label: "Карта", value: `${d.card.toFixed(0)} сом`, tone: "info" as const },
-    { label: "Перевод", value: `${d.transfer.toFixed(0)} сом`, tone: "info" as const },
-    { label: "Долги", value: `${d.debt.toFixed(0)} сом`, tone: "warn" as const },
+    { label: "Выручка сегодня", value: `${formatFixed(d.revenue, 0)} сом`, tone: "income" as const },
+    { label: "Расходы сегодня", value: `${formatFixed(d.expenses, 0)} сом`, tone: "expense" as const },
+    { label: "Чистая прибыль", value: `${formatFixed(d.profit, 0)} сом`, tone: "income" as const },
+    { label: "Заказов", value: String(d.order_count ?? 0), tone: "info" as const },
+    { label: "Наличные", value: `${formatFixed(d.cash, 0)} сом`, tone: "info" as const },
+    { label: "Карта", value: `${formatFixed(d.card, 0)} сом`, tone: "info" as const },
+    { label: "Перевод", value: `${formatFixed(d.transfer, 0)} сом`, tone: "info" as const },
+    { label: "Долги", value: `${formatFixed(d.debt, 0)} сом`, tone: "warn" as const },
   ];
 
   const toneClass = {

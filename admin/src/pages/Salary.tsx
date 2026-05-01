@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { formatFixed } from "../format";
 
 type SalaryRow = {
   cashier_id: number;
@@ -174,19 +175,19 @@ export default function Salary() {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
             <div className="text-xs text-slate-500">За сегодня</div>
-            <div className="text-lg font-bold">{data.summary.today.toFixed(0)} {cur}</div>
+            <div className="text-lg font-bold">{formatFixed(data.summary.today, 0)} {cur}</div>
           </div>
           <div className="rounded-2xl border border-income/30 bg-income-muted p-3 dark:bg-emerald-950/40">
             <div className="text-xs text-slate-600">За месяц (начислено)</div>
-            <div className="text-lg font-bold text-income">{data.summary.month_accrued.toFixed(0)} {cur}</div>
+            <div className="text-lg font-bold text-income">{formatFixed(data.summary.month_accrued, 0)} {cur}</div>
           </div>
           <div className="rounded-2xl border border-info/30 bg-info-muted p-3 dark:bg-blue-950/40">
             <div className="text-xs text-slate-600">Оплачено</div>
-            <div className="text-lg font-bold">{data.summary.month_paid.toFixed(0)} {cur}</div>
+            <div className="text-lg font-bold">{formatFixed(data.summary.month_paid, 0)} {cur}</div>
           </div>
           <div className="rounded-2xl border border-warn/30 bg-warn-muted p-3 dark:bg-amber-950/30">
             <div className="text-xs text-warn">Осталось</div>
-            <div className="text-lg font-bold text-warn">{data.summary.month_remaining.toFixed(0)} {cur}</div>
+            <div className="text-lg font-bold text-warn">{formatFixed(data.summary.month_remaining, 0)} {cur}</div>
           </div>
         </div>
       )}
@@ -243,7 +244,7 @@ export default function Salary() {
                   <option value="">—</option>
                   {accounts.map((a) => (
                     <option key={a.id} value={a.id}>
-                      {a.name} ({a.balance.toFixed(0)})
+                      {a.name} ({formatFixed(a.balance, 0)})
                     </option>
                   ))}
                 </select>
@@ -321,9 +322,9 @@ export default function Salary() {
                   </td>
                   <td className="px-2 py-2">{c.work_days}</td>
                   <td className="px-2 py-2">{c.daily_salary_rate}</td>
-                  <td className="px-2 py-2">{c.accrued.toFixed(0)}</td>
-                  <td className="px-2 py-2">{c.paid.toFixed(0)}</td>
-                  <td className="px-2 py-2">{c.balance.toFixed(0)}</td>
+                  <td className="px-2 py-2">{formatFixed(c.accrued, 0)}</td>
+                  <td className="px-2 py-2">{formatFixed(c.paid, 0)}</td>
+                  <td className="px-2 py-2">{formatFixed(c.balance, 0)}</td>
                   <td className="px-2 py-2 text-xs">{STATUS_LABEL[c.status] || c.status}</td>
                 </tr>
               ))}

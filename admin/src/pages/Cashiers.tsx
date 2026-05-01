@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api/client";
+import { formatFixed } from "../format";
 import { useAuth } from "../context/AuthContext";
 
 type Cashier = {
@@ -190,7 +191,7 @@ export default function Cashiers() {
             </div>
             <div className="text-sm text-slate-600 dark:text-slate-300">{c.phone}</div>
             <div className="text-xs text-slate-500">
-              Продаж: {c.sale_count} · на {c.sale_sum.toFixed(0)} сом · ставка {c.daily_salary_rate ?? 45} сом/день
+              Продаж: {c.sale_count ?? 0} · на {formatFixed(c.sale_sum, 0)} сом · ставка {c.daily_salary_rate ?? 45} сом/день
             </div>
             <div className="mt-2 flex gap-2">
               <button

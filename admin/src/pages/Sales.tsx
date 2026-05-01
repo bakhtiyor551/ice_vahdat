@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { formatFixed } from "../format";
 
 type SaleRow = {
   id: string;
@@ -76,7 +77,7 @@ export default function Sales() {
             >
               <div className="flex justify-between gap-2">
                 <span className="font-semibold text-slate-900 dark:text-white">#{r.order_no}</span>
-                <span className="font-bold text-income">{r.total_amount.toFixed(0)} сом</span>
+                <span className="font-bold text-income">{formatFixed(r.total_amount, 0)} сом</span>
               </div>
               <div className="mt-1 text-xs text-slate-500">
                 {r.cashier_name || "—"} · {payLabel[r.payment_type] || r.payment_type}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { formatFixed } from "../format";
 
 type Item = {
   product_name: string;
@@ -49,7 +50,7 @@ export default function SaleDetail() {
       </Link>
       <h1 className="text-xl font-bold">Заказ</h1>
       <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
-        <div className="text-2xl font-bold">{s.total_amount.toFixed(0)} сомони</div>
+        <div className="text-2xl font-bold">{formatFixed(s.total_amount, 0)} сомони</div>
         <div className="mt-2 space-y-1 text-sm text-slate-600 dark:text-slate-300">
           <p>Оплата: {s.payment_type}</p>
           <p>Кассир: {s.cashier_name || "—"}</p>
@@ -67,7 +68,7 @@ export default function SaleDetail() {
               <span>
                 {it.product_name} ×{it.quantity}
               </span>
-              <span className="font-medium">{it.total.toFixed(0)} сом</span>
+              <span className="font-medium">{formatFixed(it.total, 0)} сом</span>
             </li>
           ))}
         </ul>
