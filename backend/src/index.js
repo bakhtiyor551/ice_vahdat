@@ -1,3 +1,4 @@
+import "./loadEnv.js";
 import fs from "fs";
 import express from "express";
 import cors from "cors";
@@ -43,6 +44,13 @@ const envPath = path.join(__dirname, "..", ".env");
 
 app.listen(port, () => {
   console.log(`API http://localhost:${port}`);
+  const pwdOk =
+    !!(process.env.ADMIN_PASSWORD_HASH?.trim() || process.env.ADMIN_PASSWORD?.trim());
+  console.log(
+    pwdOk
+      ? "Админ: вход по паролю включён (ADMIN_LOGIN / ADMIN_PASSWORD или HASH)"
+      : "Админ: вход по паролю выключен — задайте ADMIN_PASSWORD или ADMIN_PASSWORD_HASH в .env и перезапустите"
+  );
   const envExists = fs.existsSync(envPath);
   if (isTelegramConfigured()) {
     console.log("Telegram: уведомления включены");
