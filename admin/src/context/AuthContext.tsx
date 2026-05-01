@@ -1,5 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { apiFetch } from "../api/client";
+import {
+  ADMIN_JWT_KEY,
+  ADMIN_UNAUTHORIZED_EVENT,
+  clearStoredAdminToken,
+  isJwtExpired,
+} from "../authStorage";
 
 type Admin = { id: number; name: string; username: string | null };
 
@@ -13,8 +19,6 @@ type AuthCtx = {
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
-
-const STORAGE_KEY = "ice_admin_jwt";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -35,7 +39,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const saved = sessionStorage.getItem(STORAGE_KEY);
+      let saved = sessionStorage.getItem(ADMIN_JWT_KEY);
+      if (saved && isJwtExpired(saved)) {
+        clearStoredAdminToken();
+        saved = null;
+      }
       if (saved) {
         if (!cancelled) {
           setToken(saved);
@@ -58,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify({ initData }),
         });
         if (cancelled) return;
-        sessionStorage.setItem(STORAGE_KEY, body.token);
+        sessionStorage.setItem(ADMIN_JWT_KEY, body.token);
         setToken(body.token);
         setAdmin(body.admin);
         WebApp?.ready();
@@ -85,10 +93,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  useEffect(() => {
+    const onUnauthorized = () => {
+      setToken(null);
+      setAdmin(null);
+      setError(null);
+    };
+    window.addEventListener(ADMIN_UNAUTHORIZED_EVENT, onUnauthorized);
+    return () => window.removeEventListener(ADMIN_UNAUTHORIZED_EVENT, onUnauthorized);
+  }, []);
+
   const logout = useCallback(() => {
-    sessionStorage.removeItem(STORAGE_KEY);
+    clearStoredAdminToken();
     setToken(null);
     setAdmin(null);
+    setError(null);
   }, []);
 
   const loginWithPassword = useCallback(async (login: string, password: string) => {
@@ -96,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: "POST",
       body: JSON.stringify({ login, password }),
     });
-    sessionStorage.setItem(STORAGE_KEY, body.token);
+    sessionStorage.setItem(ADMIN_JWT_KEY, body.token);
     setToken(body.token);
     setAdmin(body.admin);
     setError(null);

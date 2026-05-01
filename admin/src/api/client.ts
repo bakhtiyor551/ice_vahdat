@@ -1,3 +1,4 @@
+import { ADMIN_UNAUTHORIZED_EVENT, clearStoredAdminToken } from "../authStorage";
 import { API_BASE } from "../config";
 
 export async function apiFetch<T = unknown>(
@@ -30,6 +31,14 @@ export async function apiFetch<T = unknown>(
     data = { raw: text };
   }
   if (!res.ok) {
+    if (res.status === 401) {
+      clearStoredAdminToken();
+      try {
+        window.dispatchEvent(new CustomEvent(ADMIN_UNAUTHORIZED_EVENT));
+      } catch {
+        /* SSR / старые браузеры */
+      }
+    }
     const err = (data as { error?: string })?.error || res.statusText;
     throw new Error(err);
   }
@@ -57,6 +66,14 @@ export async function apiDownloadBlob(
   }
   const res = await fetch(url, { ...rest, headers });
   if (!res.ok) {
+    if (res.status === 401) {
+      clearStoredAdminToken();
+      try {
+        window.dispatchEvent(new CustomEvent(ADMIN_UNAUTHORIZED_EVENT));
+      } catch {
+        /* ignore */
+      }
+    }
     const text = await res.text();
     let err = res.statusText;
     try {
