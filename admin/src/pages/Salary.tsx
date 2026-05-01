@@ -69,6 +69,14 @@ export default function Salary() {
     const res = await apiFetch<SalaryListRes>(`/admin/salary?${q.toString()}`, { token });
     setData({
       ...res,
+      currency: res?.currency ?? "сомони",
+      month: res?.month ?? month,
+      summary: {
+        today: res?.summary?.today ?? 0,
+        month_accrued: res?.summary?.month_accrued ?? 0,
+        month_paid: res?.summary?.month_paid ?? 0,
+        month_remaining: res?.summary?.month_remaining ?? 0,
+      },
       cashiers: ensureArray(res?.cashiers),
     });
   }, [token, month, filterCashier, filterStatus]);
