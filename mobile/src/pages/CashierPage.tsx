@@ -56,6 +56,7 @@ function resolveImageUrl(url: string | null | undefined): string | undefined {
     return u;
   }
   const base = API_BASE.replace(/\/$/, "");
+  if (!base) return undefined;
   return `${base}${u.startsWith("/") ? u : `/${u}`}`;
 }
 
@@ -129,7 +130,7 @@ export default function CashierPage() {
       const n = await loadProducts();
       if (n === 0 && online) {
         void presentToast({
-          message: `Каталог пустой. Адрес API в приложении: ${API_BASE}. На телефоне «localhost» не работает — в .env задайте IP компьютера (или HTTPS) и пересоберите.`,
+          message: `Каталог пустой. API: ${API_BASE || "(не задан)"}. Локально укажите IP ПК в mobile/.env; релиз — полный URL сервера: VITE_API_URL=https://домен.ru/api и пересборка.`,
           duration: 5500,
           position: "top",
           color: "warning",
@@ -361,9 +362,9 @@ export default function CashierPage() {
             </div>
             <h3>Каталог пуст</h3>
             <p>
-              Включите Wi‑Fi, нажмите «обновить» в шапке — товары подтянутся с сервера. На телефоне в
-              `VITE_API_URL` укажите IP компьютера с бэкендом, не <code>localhost</code> (сейчас:{" "}
-              <code>{API_BASE}</code>).
+              Включите интернет, нажмите «обновить» в шапке. Для сборки APK задайте{" "}
+              <code>VITE_API_URL</code>: локально — IP ПК с бэкендом; на проде —{" "}
+              <code>https://ваш-домен.ru/api</code>. Сейчас: <code>{API_BASE || "не задан — пересоберите"}</code>.
             </p>
             <IonButton
               expand="block"

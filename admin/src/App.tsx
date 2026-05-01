@@ -70,10 +70,16 @@ function Gate() {
   );
 }
 
+function routerBasename(): string | undefined {
+  const base = import.meta.env.BASE_URL;
+  if (!base || base === "/") return undefined;
+  return base.replace(/\/$/, "") || undefined;
+}
+
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={routerBasename()}>
         <Gate />
       </BrowserRouter>
     </AuthProvider>

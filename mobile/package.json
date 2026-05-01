@@ -7,6 +7,7 @@
     "postinstall": "node scripts/copy-sql-wasm.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "android:sync": "npm run build && npx cap sync android",
     "lint": "eslint .",
     "preview": "vite preview"
   },
