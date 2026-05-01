@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // ngrok / cloudflared / localtunnel: случайный поддомен → иначе Vite блокирует Host
+    // Публичный URL / нестандартный Host — иначе Vite блокирует запросы
     allowedHosts: true,
   },
   preview: {

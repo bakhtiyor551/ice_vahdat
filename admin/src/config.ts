@@ -1,6 +1,6 @@
 /**
  * В `npm run dev` без VITE_API_URL — относительные пути и прокси Vite → backend (без CORS).
- * Если страница открыта по HTTPS (ngrok, Telegram), а VITE_API_URL — `http://...`, браузер
+ * Если страница открыта по HTTPS (например Telegram Mini App), а VITE_API_URL — `http://...`, браузер
  * заблокирует fetch (mixed content). Тогда сбрасываем base на «тот же origin», чтобы запросы
  * шли на прокси dev/preview. Для продакшена задайте `VITE_API_URL` с `https://...`.
  */

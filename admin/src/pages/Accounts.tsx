@@ -130,13 +130,13 @@ export default function Accounts() {
         <div className="flex flex-wrap gap-4 text-sm">
           <div>
             <span className="text-slate-500">Операционный баланс</span>
-            <div className="text-lg font-bold text-income">{data.total_real_balance.toFixed(2)} {data.currency}</div>
+            <div className="text-lg font-bold text-income">{Number(data?.total_real_balance ?? 0).toFixed(2)} {data.currency}</div>
             <span className="text-xs text-slate-400">все счета, кроме «Долги клиентов»</span>
           </div>
           <div>
             <span className="text-slate-500">Долги клиентов</span>
             <div className="text-lg font-bold text-amber-600 dark:text-amber-400">
-              {data.debt_balance.toFixed(2)} {data.currency}
+              {Number(data?.debt_balance ?? 0).toFixed(2)} {data.currency}
             </div>
             <span className="text-xs text-slate-400">ещё не реальные деньги</span>
           </div>
@@ -157,7 +157,7 @@ export default function Accounts() {
                   a.code === "debt" ? "text-amber-600 dark:text-amber-400" : "text-income"
                 }`}
               >
-                Баланс: {a.balance.toFixed(2)} {data.currency}
+                Баланс: {Number(a?.balance ?? 0).toFixed(2)} {data.currency}
               </div>
               <div className="mt-1 text-xs text-info">История →</div>
             </Link>

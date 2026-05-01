@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             /load failed|failed to fetch|networkerror|network request failed/i.test(raw);
           setError(
             netFail
-              ? `${raw}. Сервер недоступен по текущему адресу: проверьте, что backend запущен (порт 3847). Если открываете Mini App с телефона — в сборке укажите VITE_API_URL на публичный HTTPS API (ngrok), не localhost. В браузере на ПК можно оставить пустой VITE_API_URL и прокси dev-сервера.`
+              ? `${raw}. Сервер недоступен по текущему адресу: проверьте, что backend запущен (порт 3847). Если открываете Mini App с телефона — в сборке задайте VITE_API_URL на публичный HTTPS-адрес вашего API (не localhost). В браузере на ПК можно оставить пустой VITE_API_URL и прокси dev-сервера.`
               : raw
           );
         }
