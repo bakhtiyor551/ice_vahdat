@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "init-db": "node src/initSeed.js"
+    "init-db": "node src/initSeed.js",
+    "reset-db": "node scripts/reset-db.mjs",
+    "telegram:test": "node scripts/telegram-test.mjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
