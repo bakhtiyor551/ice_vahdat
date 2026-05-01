@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { verifyTelegramWebAppInitData } from "../lib/telegramWebAppAuth.js";
 import { signAdminToken } from "../middleware/adminAuth.js";
+import { telegramToken } from "../telegram.js";
 
 export const telegramAuthRouter = Router();
 
 telegramAuthRouter.post("/auth", (req, res) => {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  const botToken = telegramToken();
   if (!botToken) {
     return res.status(503).json({ error: "TELEGRAM_BOT_TOKEN не задан в .env" });
   }

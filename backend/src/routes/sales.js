@@ -83,7 +83,15 @@ salesRouter.post("/", (req, res) => {
     const result = insertSaleFromPayload(req.body, cashierId);
     if (!result.duplicate) {
       const name = db.prepare("SELECT name FROM cashiers WHERE id = ?").get(cashierId)?.name || "";
-      void sendTelegramMessage(formatSaleReceipt(req.body, name));
+      const receipt = formatSaleReceipt(req.body, name);
+      void sendTelegramMessage(receipt).then((r) => {
+        if (r.ok) {
+          console.log("[telegram] чек продажи отправлен", { local_id: req.body?.local_id });
+          return;
+        }
+        if (r.skipped) console.warn("[telegram] чек не отправлен:", r.reason);
+        else console.error("[telegram] чек не отправлен:", r.error ?? r.data);
+      });
     }
     res.status(result.duplicate ? 200 : 201).json({ id: result.id, duplicate: result.duplicate });
   } catch (e) {

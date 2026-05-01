@@ -26,7 +26,12 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: "10mb" }));
 
-app.get("/health", (_req, res) => res.json({ ok: true }));
+app.get("/health", (_req, res) =>
+  res.json({
+    ok: true,
+    telegram: isTelegramConfigured() ? "configured" : "missing_env",
+  })
+);
 
 app.use("/catalog", catalogRouter);
 

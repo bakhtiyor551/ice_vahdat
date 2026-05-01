@@ -5,6 +5,27 @@
  * Бот должен иметь возможность писать: в личке нажмите /start у бота.
  */
 
+function normalizeEnvStr(value) {
+  if (value == null || value === "") return "";
+  let s = String(value).trim();
+  if (
+    s.length >= 2 &&
+    ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'")))
+  ) {
+    s = s.slice(1, -1).trim();
+  }
+  return s;
+}
+
+/** Тот же токен, что для sendMessage и проверки initData (кавычки в .env снимаются). */
+export function telegramToken() {
+  return normalizeEnvStr(process.env.TELEGRAM_BOT_TOKEN);
+}
+
+function telegramChatIdRaw() {
+  return normalizeEnvStr(process.env.TELEGRAM_CHAT_ID);
+}
+
 export function formatSaleReceipt(body, cashierName) {
   const total = Number(body.total_amount);
   const items = Array.isArray(body.items) ? body.items : [];
@@ -52,10 +73,13 @@ export function formatExpenseReceipt(body) {
 }
 
 export async function sendTelegramMessage(text) {
-  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
-  const chatIdRaw = process.env.TELEGRAM_CHAT_ID?.trim();
+  const token = telegramToken();
+  const chatIdRaw = telegramChatIdRaw();
   if (!token || !chatIdRaw) {
-    return { ok: false, skipped: true, reason: "TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID не заданы в backend/.env" };
+    const reason =
+      "TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID не заданы в backend/.env (на сервере, где запущен Node). После правки перезапустите процесс.";
+    console.warn("[telegram]", reason);
+    return { ok: false, skipped: true, reason };
   }
 
   const chatId = /^-?\d+$/.test(chatIdRaw) ? Number(chatIdRaw) : chatIdRaw;
@@ -79,9 +103,15 @@ export async function sendTelegramMessage(text) {
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.ok === false) {
-    console.error("[telegram] sendMessage:", data.description || res.statusText, data);
+    console.error(
+      "[telegram] sendMessage:",
+      data.description || res.statusText,
+      data.error_code != null ? `(code ${data.error_code})` : "",
+      data
+    );
     return { ok: false, data };
   }
+  console.log("[telegram] сообщение доставлено в Telegram");
   return { ok: true };
 }
 
@@ -91,5 +121,5 @@ export async function notifyTelegram(text) {
 }
 
 export function isTelegramConfigured() {
-  return Boolean(process.env.TELEGRAM_BOT_TOKEN?.trim() && process.env.TELEGRAM_CHAT_ID?.trim());
+  return Boolean(telegramToken() && telegramChatIdRaw());
 }

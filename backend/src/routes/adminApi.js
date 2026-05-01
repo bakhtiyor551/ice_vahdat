@@ -64,6 +64,29 @@ adminApiRouter.post("/login", (req, res) => {
 
 adminApiRouter.use(adminAuthMiddleware);
 
+/** POST /admin/telegram/ping — тест чата (те же TELEGRAM_* что и для чеков с кассы) */
+adminApiRouter.post("/telegram/ping", async (_req, res) => {
+  try {
+    const r = await sendTelegramMessage("🧪 Ice: тест уведомлений (админка)");
+    if (r.ok) return res.json({ ok: true });
+    if (r.skipped) {
+      return res.status(503).json({
+        error:
+          r.reason ||
+          "Задайте TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID в backend/.env на сервере и перезапустите Node.",
+      });
+    }
+    const desc =
+      r.data && typeof r.data === "object" && r.data.description
+        ? String(r.data.description)
+        : "Ошибка Telegram API";
+    return res.status(502).json({ error: desc, telegram: r.data });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: String(e.message || e) });
+  }
+});
+
 const EXPENSE_CATEGORIES = [
   "Молоко",
   "Сахар",
