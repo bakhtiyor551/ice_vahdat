@@ -24,16 +24,16 @@ setupIonicReact();
 export default function App() {
   return (
     <IonApp>
-      <AuthProvider>
-        <CartProvider>
-          <IonReactRouter>
+      <IonReactRouter>
+        <AuthProvider>
+          <CartProvider>
             <IonRouterOutlet>
               <Route path="/tabs" component={MainTabs} />
-              <Route path="/" exact render={() => <Redirect to="/tabs/cashier" />} />
+              <Route path="/" exact render={() => <Redirect to="/tabs" />} />
             </IonRouterOutlet>
-          </IonReactRouter>
-        </CartProvider>
-      </AuthProvider>
+          </CartProvider>
+        </AuthProvider>
+      </IonReactRouter>
     </IonApp>
   );
 }

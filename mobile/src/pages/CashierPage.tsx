@@ -8,9 +8,7 @@ import {
   IonHeader,
   IonIcon,
   IonInput,
-  IonItem,
   IonLabel,
-  IonList,
   IonModal,
   IonPage,
   IonSegment,
@@ -320,7 +318,7 @@ export default function CashierPage() {
               <IonIcon icon={refreshOutline} />
             </IonButton>
           </IonButtons>
-          <IonTitle>Касса</IonTitle>
+          <IonTitle>Главная</IonTitle>
           <IonButtons slot="end">
             <IonButton fill="clear" onClick={() => void logout()}>
               <IonIcon slot="start" icon={logOutOutline} />
@@ -351,7 +349,7 @@ export default function CashierPage() {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent scrollY className="cashier-scroll">
+      <IonContent scrollY fullscreen className="cashier-scroll page-main-scroll">
         {!serverAuth ? (
           <IonCard color="warning" className="ice-alert-card ion-margin-horizontal ion-margin-top">
             <IonCardContent className="ion-padding">
@@ -369,6 +367,7 @@ export default function CashierPage() {
         ) : null}
         <div className="ice-content-wrap">
           <div className="cashier-menu-intro">
+            <span className="cashier-main-pill">Главная</span>
             <h2>Меню</h2>
             <p>Нажмите на карточку — товар попадёт в корзину. Повторное нажатие увеличит количество.</p>
           </div>
@@ -483,8 +482,6 @@ export default function CashierPage() {
         className="checkout-modal"
         isOpen={checkoutOpen}
         onDidDismiss={() => setCheckoutOpen(false)}
-        initialBreakpoint={0.92}
-        breakpoints={[0, 0.92]}
       >
         <IonHeader>
           <IonToolbar>
@@ -496,94 +493,108 @@ export default function CashierPage() {
             </IonButtons>
           </IonToolbar>
         </IonHeader>
-        <IonContent className="ion-padding checkout-modal__body">
-          <div className="checkout-total-card">
-            <div className="checkout-total-card__label">Сумма к оплате</div>
-            <div className="checkout-total-card__sum">
-              {total}{" "}
-              <span className="checkout-total-card__currency">сомони</span>
+        <IonContent scrollY fullscreen={false} className="ion-padding checkout-modal__body">
+          <div className="checkout-modal__inner ice-content-wrap">
+            <div className="checkout-total-card">
+              <div className="checkout-total-card__label">Сумма к оплате</div>
+              <div className="checkout-total-card__sum">
+                {total}{" "}
+                <span className="checkout-total-card__currency">сомони</span>
+              </div>
             </div>
+
+            <div className="checkout-section-label">Способ оплаты</div>
+            <IonSegment
+              className="payment-segment"
+              value={paymentType}
+              onIonChange={(e) => setPaymentType((e.detail.value as PayKind) || "cash")}
+              scrollable
+            >
+              <IonSegmentButton value="cash">
+                <IonLabel>Наличные</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="card">
+                <IonLabel>Карта</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="transfer">
+                <IonLabel>Перевод</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="debt">
+                <IonLabel>Долг</IonLabel>
+              </IonSegmentButton>
+            </IonSegment>
+
+            {paymentType === "cash" ? (
+              <div className="checkout-fields-block">
+                <div className="checkout-field">
+                  <label className="checkout-field-label" htmlFor="checkout-client-amount">
+                    Клиент дал
+                  </label>
+                  <IonInput
+                    id="checkout-client-amount"
+                    type="number"
+                    inputmode="decimal"
+                    enterkeyhint="done"
+                    placeholder="0"
+                    value={clientAmount}
+                    className="checkout-field-input"
+                    onIonInput={(e) => setClientAmount(String(e.detail.value ?? ""))}
+                  />
+                </div>
+                {changePreview !== null ? (
+                  <div className="checkout-change-row">
+                    <span className="checkout-change-label">Сдача</span>
+                    <strong className="checkout-change-value">{changePreview.toFixed(2)} сомони</strong>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            {paymentType === "debt" ? (
+              <div className="checkout-fields-block">
+                <div className="checkout-field">
+                  <label className="checkout-field-label" htmlFor="checkout-debt-comment">
+                    Имя клиента / комментарий
+                  </label>
+                  <IonInput
+                    id="checkout-debt-comment"
+                    enterkeyhint="done"
+                    value={debtComment}
+                    className="checkout-field-input"
+                    onIonInput={(e) => setDebtComment(String(e.detail.value ?? ""))}
+                  />
+                </div>
+              </div>
+            ) : null}
+
+            {paymentType === "card" || paymentType === "transfer" ? (
+              <IonText color="medium">
+                <p className="checkout-hint-text ion-margin-top">
+                  Проверьте сумму и подтвердите — дополнительные поля не нужны.
+                </p>
+              </IonText>
+            ) : null}
+
+            {err ? (
+              <IonText color="danger" className="error-text">
+                <p className="ion-no-margin">{err}</p>
+              </IonText>
+            ) : null}
           </div>
-
-          <div className="checkout-section-label">Способ оплаты</div>
-          <IonSegment
-            className="payment-segment"
-            value={paymentType}
-            onIonChange={(e) => setPaymentType((e.detail.value as PayKind) || "cash")}
-            scrollable
-          >
-            <IonSegmentButton value="cash">
-              <IonLabel>Наличные</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="card">
-              <IonLabel>Карта</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="transfer">
-              <IonLabel>Перевод</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="debt">
-              <IonLabel>Долг</IonLabel>
-            </IonSegmentButton>
-          </IonSegment>
-
-          {paymentType === "cash" ? (
-            <IonList lines="none">
-              <IonItem>
-                <IonLabel position="stacked">Клиент дал</IonLabel>
-                <IonInput
-                  type="number"
-                  inputmode="decimal"
-                  placeholder="0"
-                  value={clientAmount}
-                  onIonInput={(e) => setClientAmount(String(e.detail.value ?? ""))}
-                />
-              </IonItem>
-              {changePreview !== null ? (
-                <IonItem lines="none">
-                  <IonLabel>Сдача</IonLabel>
-                  <IonText slot="end">
-                    <strong>{changePreview.toFixed(2)} сомони</strong>
-                  </IonText>
-                </IonItem>
-              ) : null}
-            </IonList>
-          ) : null}
-
-          {paymentType === "debt" ? (
-            <IonList lines="none">
-              <IonItem>
-                <IonLabel position="stacked">Имя клиента / комментарий</IonLabel>
-                <IonInput
-                  value={debtComment}
-                  onIonInput={(e) => setDebtComment(String(e.detail.value ?? ""))}
-                />
-              </IonItem>
-            </IonList>
-          ) : null}
-
-          {paymentType === "card" || paymentType === "transfer" ? (
-            <IonText color="medium">
-              <p className="ion-margin-top" style={{ fontSize: "0.9rem", lineHeight: 1.45 }}>
-                Проверьте сумму и подтвердите — дополнительные поля не нужны.
-              </p>
-            </IonText>
-          ) : null}
-
-          {err ? (
-            <IonText color="danger" className="error-text">
-              <p className="ion-no-margin">{err}</p>
-            </IonText>
-          ) : null}
-
-          <IonButton
-            expand="block"
-            className="confirm-order-btn"
-            disabled={saving}
-            onClick={() => void confirmOrder()}
-          >
-            Подтвердить заказ
-          </IonButton>
         </IonContent>
+
+        <IonFooter className="ion-no-border checkout-modal__footer">
+          <IonToolbar className="checkout-modal__footer-toolbar">
+            <IonButton
+              expand="block"
+              className="confirm-order-btn"
+              disabled={saving}
+              onClick={() => void confirmOrder()}
+            >
+              Подтвердить заказ
+            </IonButton>
+          </IonToolbar>
+        </IonFooter>
       </IonModal>
     </IonPage>
   );

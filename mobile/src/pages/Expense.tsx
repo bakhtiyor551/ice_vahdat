@@ -3,9 +3,6 @@ import {
   IonContent,
   IonHeader,
   IonInput,
-  IonItem,
-  IonLabel,
-  IonList,
   IonPage,
   IonSelect,
   IonSelectOption,
@@ -45,7 +42,7 @@ const PAYMENT_ACCOUNTS = [
 ] as const;
 
 export default function ExpensePage() {
-  const { session, ready } = useAuth();
+  const { session } = useAuth();
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<string>(EXPENSE_CATEGORIES[0]);
   const [paymentAccount, setPaymentAccount] = useState<(typeof PAYMENT_ACCOUNTS)[number]["value"]>("cash");
@@ -116,88 +113,82 @@ export default function ExpensePage() {
     }
   }, [session, amount, category, paymentAccount, comment, presentToast]);
 
-  if (!ready) {
-    return (
-      <IonPage>
-        <IonContent className="ion-padding">
-          <div className="ice-loading">
-            <div className="ice-spinner" aria-hidden />
-            <span>Загрузка…</span>
-          </div>
-        </IonContent>
-      </IonPage>
-    );
-  }
-
   return (
     <IonPage className="page-expense">
       <IonHeader className="ion-no-border">
         <IonToolbar className="expense-hero">
-          <IonTitle>Учёт расходов</IonTitle>
+          <IonTitle>Расход</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="expense-body">
+      <IonContent scrollY fullscreen className="expense-body page-expense-scroll">
         <div className="expense-scroll-inner ice-content-wrap">
+          <span className="expense-tab-pill">Вкладка «Расход»</span>
           <p className="expense-lead">
-            Зафиксируйте закупку или трату: укажите сумму, категорию и с какого счёта списали (наличные, карта
-            или перевод). Запись сохранится в телефоне и попадёт в синхронизацию, когда будет связь с сервером.
+            Зафиксируйте закупку или трату: сумма, категория и счёт (наличные, карта или перевод). Запись
+            сохранится на телефоне и уйдёт на сервер при связи.
           </p>
 
-          <div className="expense-form-card">
-            <IonList lines="none">
-              <IonItem>
-                <IonLabel position="stacked">Сумма, сомони</IonLabel>
-                <IonInput
-                  type="number"
-                  inputmode="decimal"
-                  placeholder="0"
-                  value={amount}
-                  onIonInput={(e) => setAmount(String(e.detail.value ?? ""))}
-                />
-              </IonItem>
-              <IonItem>
-                <IonSelect
-                  label="Категория"
-                  labelPlacement="stacked"
-                  interface="action-sheet"
-                  value={category}
-                  onIonChange={(e) => setCategory(String(e.detail.value))}
-                >
-                  {EXPENSE_CATEGORIES.map((c) => (
-                    <IonSelectOption key={c} value={c}>
-                      {c}
-                    </IonSelectOption>
-                  ))}
-                </IonSelect>
-              </IonItem>
-              <IonItem>
-                <IonSelect
-                  label="Счёт оплаты"
-                  labelPlacement="stacked"
-                  interface="action-sheet"
-                  value={paymentAccount}
-                  onIonChange={(e) =>
-                    setPaymentAccount((e.detail.value as (typeof PAYMENT_ACCOUNTS)[number]["value"]) || "cash")
-                  }
-                >
-                  {PAYMENT_ACCOUNTS.map((p) => (
-                    <IonSelectOption key={p.value} value={p.value}>
-                      {p.label}
-                    </IonSelectOption>
-                  ))}
-                </IonSelect>
-              </IonItem>
-              <IonItem>
-                <IonLabel position="stacked">Комментарий (необязательно)</IonLabel>
-                <IonTextarea
-                  autoGrow
-                  rows={2}
-                  placeholder="Например: поставщик, накладная №…"
-                  value={comment}
-                  onIonInput={(e) => setComment(String(e.detail.value ?? ""))}
-                />
-              </IonItem>
-            </IonList>
+          <div className="expense-form-card expense-form-card--fields">
+            <div className="expense-field expense-field--full">
+              <label className="expense-field-label" htmlFor="expense-amount">
+                Сумма, сомони
+              </label>
+              <IonInput
+                id="expense-amount"
+                type="number"
+                inputmode="decimal"
+                placeholder="0"
+                value={amount}
+                className="expense-field-input"
+                onIonInput={(e) => setAmount(String(e.detail.value ?? ""))}
+              />
+            </div>
+            <div className="expense-field">
+              <span className="expense-field-label">Категория</span>
+              <IonSelect
+                className="expense-field-select"
+                interface="action-sheet"
+                value={category}
+                onIonChange={(e) => setCategory(String(e.detail.value))}
+              >
+                {EXPENSE_CATEGORIES.map((c) => (
+                  <IonSelectOption key={c} value={c}>
+                    {c}
+                  </IonSelectOption>
+                ))}
+              </IonSelect>
+            </div>
+            <div className="expense-field">
+              <span className="expense-field-label">Счёт оплаты</span>
+              <IonSelect
+                className="expense-field-select"
+                interface="action-sheet"
+                value={paymentAccount}
+                onIonChange={(e) =>
+                  setPaymentAccount((e.detail.value as (typeof PAYMENT_ACCOUNTS)[number]["value"]) || "cash")
+                }
+              >
+                {PAYMENT_ACCOUNTS.map((p) => (
+                  <IonSelectOption key={p.value} value={p.value}>
+                    {p.label}
+                  </IonSelectOption>
+                ))}
+              </IonSelect>
+            </div>
+            <div className="expense-field expense-field--full">
+              <label className="expense-field-label" htmlFor="expense-comment">
+                Комментарий (необязательно)
+              </label>
+              <IonTextarea
+                id="expense-comment"
+                className="expense-field-textarea"
+                autoGrow
+                rows={2}
+                placeholder="Например: поставщик, накладная №…"
+                value={comment}
+                onIonInput={(e) => setComment(String(e.detail.value ?? ""))}
+              />
+            </div>
           </div>
 
           {err ? (

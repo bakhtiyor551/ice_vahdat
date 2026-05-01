@@ -59,7 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
     void (async () => {
-      await initLocalDb();
+      try {
+        await initLocalDb();
+      } catch (e) {
+        console.error("[Ice Kassa] initLocalDb:", e);
+      }
       const st = await Network.getStatus();
       if (mounted) setOnline(st.connected);
       const sessionInfo = await ensureLocalSession();

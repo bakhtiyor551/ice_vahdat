@@ -1,3 +1,4 @@
+/// <reference types="@capacitor/keyboard" />
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
@@ -8,6 +9,12 @@ const config: CapacitorConfig = {
   // блокируется как mixed content. http-схема origin позволяет HTTP API в локальной сети.
   server: {
     androidScheme: 'http',
+  },
+  plugins: {
+    Keyboard: {
+      /** Android: WebView корректно сжимается при клавиатуре (в т.ч. полноэкран). */
+      resizeOnFullScreen: true,
+    },
   },
 };
 
