@@ -31,12 +31,14 @@ import {
   trashOutline,
   wifiOutline,
 } from "ionicons/icons";
+import { Network } from "@capacitor/network";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { v4 as uuid } from "uuid";
 import { API_BASE } from "../config";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
-import { qAll, qRun } from "../services/db";
+import { getToken, qAll, qRun } from "../services/db";
+import { pullProducts } from "../services/productsSync";
 import { runSyncOnce } from "../services/sync";
 
 type Product = {
@@ -113,15 +115,31 @@ export default function CashierPage() {
     return rows.length;
   }, []);
 
+  const pullCatalogFromServer = useCallback(async () => {
+    const st = await Network.getStatus();
+    if (!st.connected) return;
+    try {
+      await pullProducts(await getToken());
+    } catch (e) {
+      console.warn("pull catalog", e);
+    }
+  }, []);
+
   useIonViewWillEnter(() => {
-    void loadProducts();
+    void (async () => {
+      await pullCatalogFromServer();
+      await loadProducts();
+    })();
   });
 
-  /** После синка или при появлении сети список из SQLite обновляется повторно (раньше был пустой из-за гонки). */
+  /** При готовности приложения и сети — сначала каталог с сервера, затем отрисовка из SQLite. */
   useEffect(() => {
     if (!ready) return;
-    void loadProducts();
-  }, [ready, online, loadProducts]);
+    void (async () => {
+      if (online) await pullCatalogFromServer();
+      await loadProducts();
+    })();
+  }, [ready, online, loadProducts, pullCatalogFromServer]);
 
   const refreshCatalog = useCallback(async () => {
     setCatalogBusy(true);
