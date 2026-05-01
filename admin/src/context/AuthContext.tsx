@@ -9,6 +9,7 @@ type AuthCtx = {
   token: string | null;
   admin: Admin | null;
   logout: () => void;
+  loginWithPassword: (login: string, password: string) => Promise<void>;
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
@@ -47,12 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const WebApp = window.Telegram?.WebApp;
       const initData = WebApp?.initData;
       if (!initData) {
-        if (!cancelled) {
-          setError(
-            "Откройте приложение из Telegram или задайте VITE_DEV_TOKEN + DEV_ADMIN_TOKEN на бэкенде для разработки."
-          );
-          setReady(true);
-        }
+        if (!cancelled) setReady(true);
         return;
       }
 
@@ -95,9 +91,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAdmin(null);
   }, []);
 
+  const loginWithPassword = useCallback(async (login: string, password: string) => {
+    const body = await apiFetch<{ token: string; admin: Admin }>("/admin/login", {
+      method: "POST",
+      body: JSON.stringify({ login, password }),
+    });
+    sessionStorage.setItem(STORAGE_KEY, body.token);
+    setToken(body.token);
+    setAdmin(body.admin);
+    setError(null);
+  }, []);
+
   const value = useMemo(
-    () => ({ ready, error, token, admin, logout }),
-    [ready, error, token, admin, logout]
+    () => ({ ready, error, token, admin, logout, loginWithPassword }),
+    [ready, error, token, admin, logout, loginWithPassword]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

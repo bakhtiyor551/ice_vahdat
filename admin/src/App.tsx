@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import AdminLogin from "./components/AdminLogin";
 import AppShell from "./components/AppShell";
 import Dashboard from "./pages/Dashboard";
 import Sales from "./pages/Sales";
@@ -30,24 +31,15 @@ function Gate() {
     );
   }
 
-  if (error && !token) {
-    return (
-      <div className="p-6">
-        <p className="text-expense font-medium">{error}</p>
-        <p className="mt-2 text-sm text-slate-500">
-          Локально без Telegram: создайте admin/.env — <code className="rounded bg-slate-200 px-1 dark:bg-slate-700">VITE_DEV_TOKEN</code> = тот же секрет, что{" "}
-          <code className="rounded bg-slate-200 px-1 dark:bg-slate-700">DEV_ADMIN_TOKEN</code> в backend/.env (можно не задавать{" "}
-          <code className="rounded bg-slate-200 px-1 dark:bg-slate-700">VITE_API_URL</code>, прокси dev отправит запросы на :3847).
-          С телефона нужен HTTPS URL API в <code className="rounded bg-slate-200 px-1 dark:bg-slate-700">VITE_API_URL</code>.
-        </p>
-      </div>
-    );
-  }
-
   if (!token) {
     return (
-      <div className="p-6 text-slate-500">
-        Нет доступа. Откройте из Telegram или настройте токен разработки.
+      <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-950">
+        {error ? (
+          <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-100">
+            {error}
+          </div>
+        ) : null}
+        <AdminLogin />
       </div>
     );
   }

@@ -2,7 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "../db.js";
-import { adminAuthMiddleware } from "../middleware/adminAuth.js";
+import { adminAuthMiddleware, signAdminToken } from "../middleware/adminAuth.js";
 import { formatExpenseReceipt, sendTelegramMessage } from "../telegram.js";
 import { recordExpenseInLedger } from "../ledger.js";
 import { registerLedgerRoutes } from "./ledgerAdmin.js";
@@ -11,6 +11,57 @@ import { registerReportRoutes } from "./reportsAdmin.js";
 import { registerSalaryRoutes } from "./salaryAdmin.js";
 
 export const adminApiRouter = Router();
+
+/** POST /admin/login — без JWT; логин/пароль из backend/.env */
+adminApiRouter.post("/login", (req, res) => {
+  try {
+    const login = String(req.body?.login ?? "").trim();
+    const password = String(req.body?.password ?? "");
+    const expectedLogin = process.env.ADMIN_LOGIN?.trim() || "admin";
+    const hash = process.env.ADMIN_PASSWORD_HASH?.trim();
+    const plain = process.env.ADMIN_PASSWORD?.trim();
+
+    if (!hash && !plain) {
+      return res.status(503).json({
+        error:
+          "Вход по паролю не настроен. Задайте ADMIN_PASSWORD или ADMIN_PASSWORD_HASH в backend/.env",
+      });
+    }
+    if (!login || !password) {
+      return res.status(400).json({ error: "Укажите логин и пароль" });
+    }
+    if (login !== expectedLogin) {
+      return res.status(401).json({ error: "Неверный логин или пароль" });
+    }
+    let ok = false;
+    if (hash) {
+      ok = bcrypt.compareSync(password, hash);
+    } else {
+      ok = password === plain;
+    }
+    if (!ok) {
+      return res.status(401).json({ error: "Неверный логин или пароль" });
+    }
+
+    const token = signAdminToken({
+      sub: "admin-password",
+      name: expectedLogin,
+    });
+
+    res.json({
+      token,
+      admin: {
+        id: 1,
+        name: expectedLogin,
+        username: login,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: String(e.message || e) });
+  }
+});
+
 adminApiRouter.use(adminAuthMiddleware);
 
 const EXPENSE_CATEGORIES = [
