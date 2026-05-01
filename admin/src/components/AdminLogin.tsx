@@ -26,7 +26,7 @@ export default function AdminLogin() {
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
         <h1 className="text-lg font-bold text-slate-900 dark:text-white">Вход в админку</h1>
         <p className="mt-1 text-xs text-slate-500">
-          Логин и пароль задаются в <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">backend/.env</code>{" "}
+
           (<span className="whitespace-nowrap">ADMIN_LOGIN</span>,{" "}
           <span className="whitespace-nowrap">ADMIN_PASSWORD</span> или хеш{" "}
           <span className="whitespace-nowrap">ADMIN_PASSWORD_HASH</span>).
