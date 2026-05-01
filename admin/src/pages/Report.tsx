@@ -222,6 +222,9 @@ export default function Report() {
   if (!token) return null;
 
   const cur = summary?.currency || "сомони";
+  const nowIso = new Date().toISOString();
+  const periodSafe = summary?.period ?? { start: nowIso, end: nowIso, label: "" };
+  const detailDay = String(periodSafe.end || nowIso).slice(0, 10);
 
   return (
     <div className="space-y-4 pb-4">
@@ -372,10 +375,10 @@ export default function Report() {
         </button>
         {summary && (
           <Link
-            to={`/reports/detail?date=${encodeURIComponent(summary.period.end.slice(0, 10))}`}
+            to={`/reports/detail?date=${encodeURIComponent(detailDay)}`}
             className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-600"
           >
-            Детальный отчёт дня ({summary.period.end.slice(0, 10)})
+            Детальный отчёт дня ({detailDay})
           </Link>
         )}
       </div>
@@ -386,8 +389,8 @@ export default function Report() {
       {summary && !loading && (
         <>
           <p className="text-xs text-slate-500">
-            Период: {summary.period.label} · {new Date(summary.period.start).toLocaleString()} —{" "}
-            {new Date(summary.period.end).toLocaleString()}
+            Период: {periodSafe.label} · {new Date(periodSafe.start).toLocaleString()} —{" "}
+            {new Date(periodSafe.end).toLocaleString()}
           </p>
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
