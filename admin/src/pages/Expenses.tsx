@@ -32,18 +32,14 @@ export default function Expenses() {
   const [payment_type, setPaymentType] = useState("cash");
   const [comment, setComment] = useState("");
   const [saving, setSaving] = useState(false);
+  const [newCat, setNewCat] = useState("");
+  const [addingCat, setAddingCat] = useState(false);
 
   useEffect(() => {
     if (!token) return;
-    void (async () => {
-      try {
-        const c = await apiFetch<string[]>("/admin/expense-categories", { token });
-        setCats(ensureArray<string>(c));
-        setCategory((prev) => prev || c[0] || "");
-      } catch {
-        /* ignore */
-      }
-    })();
+    void loadCategories().catch(() => {
+      /* ignore */
+    });
   }, [token]);
 
   useEffect(() => {
@@ -58,6 +54,36 @@ export default function Expenses() {
       }
     })();
   }, [token, preset]);
+
+  const loadCategories = async () => {
+    if (!token) return;
+    const c = await apiFetch<string[]>("/admin/expense-categories", { token });
+    const list = ensureArray<string>(c);
+    setCats(list);
+    setCategory((prev) => (prev && list.includes(prev) ? prev : list[0] || ""));
+  };
+
+  const addCategory = async () => {
+    if (!token) return;
+    const name = newCat.trim();
+    if (!name) return;
+    setAddingCat(true);
+    try {
+      await apiFetch("/admin/expense-categories", {
+        method: "POST",
+        token,
+        body: JSON.stringify({ name }),
+      });
+      setNewCat("");
+      await loadCategories();
+      setCategory(name);
+      setErr(null);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Ошибка");
+    } finally {
+      setAddingCat(false);
+    }
+  };
 
   const submit = async () => {
     if (!token) return;
@@ -127,6 +153,22 @@ export default function Expenses() {
               </option>
             ))}
           </select>
+          <div className="flex gap-2">
+            <input
+              placeholder="Новая категория (упаковка, …)"
+              value={newCat}
+              onChange={(e) => setNewCat(e.target.value)}
+              className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800"
+            />
+            <button
+              type="button"
+              disabled={addingCat || !newCat.trim()}
+              onClick={() => void addCategory()}
+              className="shrink-0 rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600 disabled:opacity-50"
+            >
+              Добавить
+            </button>
+          </div>
           <select
             value={payment_type}
             onChange={(e) => setPaymentType(e.target.value)}

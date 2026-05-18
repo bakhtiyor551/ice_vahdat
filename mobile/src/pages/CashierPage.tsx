@@ -21,10 +21,12 @@ import {
 } from "@ionic/react";
 import {
   addOutline,
+  bagHandleOutline,
   cloudOfflineOutline,
   logOutOutline,
   refreshOutline,
   removeOutline,
+  searchOutline,
   syncOutline,
   trashOutline,
   wifiOutline,
@@ -79,14 +81,19 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
             🍦
           </span>
         )}
+        <div className="product-card__price-badge">
+          {product.price}
+          <span className="product-card__price-badge-unit"> сом</span>
+        </div>
       </div>
       <IonCardContent className="product-card__body">
         <div className="product-card__name">{product.name}</div>
-        <div className="product-card__price">
-          <span className="product-card__currency">{product.price}</span>
-          <span className="product-card__price-unit"> сомони</span>
+        <div className="product-card__subtitle">Нажмите — добавить · повтор — ещё порция</div>
+        <div className="product-card__actions">
+          <div className="product-card__add-fab" aria-hidden>
+            <IonIcon icon={addOutline} />
+          </div>
         </div>
-        <div className="product-card__hint">Нажмите — добавить · ещё раз — ещё порция</div>
       </IonCardContent>
     </IonCard>
   );
@@ -104,6 +111,8 @@ export default function CashierPage() {
   const [err, setErr] = useState("");
   const [saving, setSaving] = useState(false);
   const [presentToast] = useIonToast();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("__all__");
 
   const loadProducts = useCallback(async () => {
     const rows = await qAll<Product>(
@@ -168,6 +177,23 @@ export default function CashierPage() {
     }
     return Array.from(map.entries());
   }, [products]);
+
+  const categoryChips = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) set.add(p.category?.trim() || "Другое");
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "ru"));
+  }, [products]);
+
+  const filteredSections = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return productSections
+      .filter(([cat]) => categoryFilter === "__all__" || cat === categoryFilter)
+      .map(([cat, items]) => {
+        const filtered = items.filter((p) => !q || p.name.toLowerCase().includes(q));
+        return [cat, filtered] as [string, Product[]];
+      })
+      .filter(([, items]) => items.length > 0);
+  }, [productSections, searchQuery, categoryFilter]);
 
   const cartCount = useMemo(() => lines.reduce((s, l) => s + l.quantity, 0), [lines]);
 
@@ -318,7 +344,7 @@ export default function CashierPage() {
               <IonIcon icon={refreshOutline} />
             </IonButton>
           </IonButtons>
-          <IonTitle>Главная</IonTitle>
+          <IonTitle>Ice Kassa</IonTitle>
           <IonButtons slot="end">
             <IonButton fill="clear" onClick={() => void logout()}>
               <IonIcon slot="start" icon={logOutOutline} />
@@ -367,10 +393,49 @@ export default function CashierPage() {
         ) : null}
         <div className="ice-content-wrap">
           <div className="cashier-menu-intro">
-            <span className="cashier-main-pill">Главная</span>
-            <h2>Меню</h2>
+            <span className="cashier-main-pill">Меню</span>
+            <h2>Каталог</h2>
             <p>Нажмите на карточку — товар попадёт в корзину. Повторное нажатие увеличит количество.</p>
           </div>
+
+          {products.length > 0 ? (
+            <div className="cashier-filters">
+              <div className="cashier-search-wrap">
+                <IonIcon icon={searchOutline} className="cashier-search-icon" aria-hidden />
+                <IonInput
+                  className="cashier-search-input"
+                  placeholder="Поиск по названию…"
+                  value={searchQuery}
+                  inputmode="search"
+                  enterKeyHint="search"
+                  onIonInput={(e) => setSearchQuery(String(e.detail.value ?? ""))}
+                />
+              </div>
+              <div className="cashier-chips-scroll" role="tablist" aria-label="Категории">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={categoryFilter === "__all__"}
+                  className={`cashier-chip${categoryFilter === "__all__" ? " cashier-chip--active" : ""}`}
+                  onClick={() => setCategoryFilter("__all__")}
+                >
+                  Все
+                </button>
+                {categoryChips.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    role="tab"
+                    aria-selected={categoryFilter === c}
+                    className={`cashier-chip${categoryFilter === c ? " cashier-chip--active" : ""}`}
+                    onClick={() => setCategoryFilter(c)}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           {products.length === 0 ? (
             <div className="empty-catalog">
@@ -392,8 +457,10 @@ export default function CashierPage() {
               Загрузить каталог
             </IonButton>
           </div>
+        ) : filteredSections.length === 0 ? (
+          <p className="cashier-empty-filter">Ничего не найдено — смените поиск или категорию.</p>
         ) : (
-          productSections.map(([category, items]) => (
+          filteredSections.map(([category, items]) => (
             <section key={category} className="product-section">
               <h3 className="product-section__title">{category}</h3>
               <div className="product-grid">
@@ -407,7 +474,7 @@ export default function CashierPage() {
               </div>
             </section>
           ))
-          )}
+        )}
         </div>
       </IonContent>
 
@@ -415,8 +482,17 @@ export default function CashierPage() {
         <IonFooter className="cart-footer">
           <div className="cart-footer__shell">
             <div className="cart-footer__head">
-              <h3 className="cart-footer__title">Корзина</h3>
-              <span className="cart-count-pill">{cartCount}</span>
+              <div className="cart-footer__head-row">
+                <div className="cart-footer__basket-icon" aria-hidden>
+                  <IonIcon icon={bagHandleOutline} />
+                </div>
+                <div>
+                  <h3 className="cart-footer__title">Корзина</h3>
+                  <p className="cart-footer__meta">
+                    {cartCount} поз. · {total} сомони
+                  </p>
+                </div>
+              </div>
             </div>
             <div className="cart-footer__lines">
               {lines.map((l) => {

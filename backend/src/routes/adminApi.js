@@ -9,6 +9,7 @@ import { registerLedgerRoutes } from "./ledgerAdmin.js";
 import { registerRecipeRoutes } from "./recipesAdmin.js";
 import { registerReportRoutes } from "./reportsAdmin.js";
 import { registerSalaryRoutes } from "./salaryAdmin.js";
+import { addExpenseCategory, listExpenseCategoryNames } from "../expenseCategories.js";
 
 export const adminApiRouter = Router();
 
@@ -86,25 +87,6 @@ adminApiRouter.post("/telegram/ping", async (_req, res) => {
     res.status(500).json({ error: String(e.message || e) });
   }
 });
-
-const EXPENSE_CATEGORIES = [
-  "Молоко",
-  "Сахар",
-  "Сливки",
-  "Сухое молоко",
-  "Ванилин",
-  "Стаканчики",
-  "Рожки",
-  "Ложки",
-  "Салфетки",
-  "Доставка",
-  "Ремонт",
-  "Аренда",
-  "Электричество",
-  "Вода",
-  "Реклама",
-  "Прочее",
-];
 
 function dayBoundsISO(inputDate) {
   const base = inputDate ? new Date(inputDate) : new Date();
@@ -417,7 +399,22 @@ adminApiRouter.post("/expenses", (req, res) => {
 
 /** GET /admin/expense-categories */
 adminApiRouter.get("/expense-categories", (_req, res) => {
-  res.json(EXPENSE_CATEGORIES);
+  try {
+    res.json(listExpenseCategoryNames());
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: String(e.message || e) });
+  }
+});
+
+/** POST /admin/expense-categories — новая категория (упаковка, прочее) */
+adminApiRouter.post("/expense-categories", (req, res) => {
+  try {
+    const name = addExpenseCategory(req.body?.name);
+    res.status(201).json({ name });
+  } catch (e) {
+    res.status(400).json({ error: String(e.message || e) });
+  }
 });
 
 /** GET /admin/products */

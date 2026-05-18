@@ -12,13 +12,14 @@ import {
   IonToolbar,
   useIonToast,
 } from "@ionic/react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { apiFetch } from "../services/api";
 import { v4 as uuid } from "uuid";
 import { useAuth } from "../context/AuthContext";
-import { qRun } from "../services/db";
+import { getToken, qRun } from "../services/db";
 import { runSyncOnce } from "../services/sync";
 
-const EXPENSE_CATEGORIES = [
+const FALLBACK_EXPENSE_CATEGORIES = [
   "Молоко",
   "Сахар",
   "Сливки",
@@ -28,10 +29,16 @@ const EXPENSE_CATEGORIES = [
   "Рожки",
   "Ложки",
   "Салфетки",
+  "Упаковка мороженого 2 сомони",
+  "Упаковка мороженого 3 сомони",
+  "Упаковка мороженого 5 сомони",
+  "Упаковка мороженого 7 сомони",
   "Доставка",
   "Ремонт",
   "Аренда",
   "Электричество",
+  "Вода",
+  "Реклама",
   "Прочее",
 ] as const;
 
@@ -42,14 +49,32 @@ const PAYMENT_ACCOUNTS = [
 ] as const;
 
 export default function ExpensePage() {
-  const { session } = useAuth();
+  const { session, serverAuth } = useAuth();
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState<string>(EXPENSE_CATEGORIES[0]);
+  const [categories, setCategories] = useState<string[]>([...FALLBACK_EXPENSE_CATEGORIES]);
+  const [category, setCategory] = useState<string>(FALLBACK_EXPENSE_CATEGORIES[0]);
   const [paymentAccount, setPaymentAccount] = useState<(typeof PAYMENT_ACCOUNTS)[number]["value"]>("cash");
   const [comment, setComment] = useState("");
   const [err, setErr] = useState("");
   const [saving, setSaving] = useState(false);
   const [presentToast] = useIonToast();
+
+  useEffect(() => {
+    if (!serverAuth) return;
+    void (async () => {
+      const token = await getToken();
+      if (!token) return;
+      try {
+        const list = await apiFetch<string[]>("/expenses/categories", { token });
+        if (Array.isArray(list) && list.length > 0) {
+          setCategories(list);
+          setCategory((prev) => (list.includes(prev) ? prev : list[0]));
+        }
+      } catch {
+        /* офлайн — остаётся локальный список */
+      }
+    })();
+  }, [serverAuth]);
 
   const save = useCallback(async () => {
     if (!session) return;
@@ -101,7 +126,7 @@ export default function ExpensePage() {
       );
 
       setAmount("");
-      setCategory(EXPENSE_CATEGORIES[0]);
+      setCategory(categories[0] ?? FALLBACK_EXPENSE_CATEGORIES[0]);
       setPaymentAccount("cash");
       setComment("");
       void presentToast({ message: "Расход сохранён", duration: 2000, position: "top", color: "success" });
@@ -111,7 +136,7 @@ export default function ExpensePage() {
     } finally {
       setSaving(false);
     }
-  }, [session, amount, category, paymentAccount, comment, presentToast]);
+  }, [session, amount, category, categories, paymentAccount, comment, presentToast]);
 
   return (
     <IonPage className="page-expense">
@@ -151,7 +176,7 @@ export default function ExpensePage() {
                 value={category}
                 onIonChange={(e) => setCategory(String(e.detail.value))}
               >
-                {EXPENSE_CATEGORIES.map((c) => (
+                {categories.map((c) => (
                   <IonSelectOption key={c} value={c}>
                     {c}
                   </IonSelectOption>

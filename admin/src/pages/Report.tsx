@@ -64,25 +64,6 @@ const PAYMENT_LABEL: Record<string, string> = {
   debt: "Долг",
 };
 
-const EXPENSE_CATEGORIES = [
-  "Молоко",
-  "Сахар",
-  "Сливки",
-  "Сухое молоко",
-  "Ванилин",
-  "Стаканчики",
-  "Рожки",
-  "Ложки",
-  "Салфетки",
-  "Доставка",
-  "Ремонт",
-  "Аренда",
-  "Электричество",
-  "Вода",
-  "Реклама",
-  "Прочее",
-];
-
 function buildSearchParams(opts: {
   preset: Preset;
   from: string;
@@ -122,6 +103,7 @@ export default function Report() {
 
   const [cashiers, setCashiers] = useState<CashierOpt[]>([]);
   const [products, setProducts] = useState<ProductOpt[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<string[]>([]);
 
   const [summary, setSummary] = useState<Summary | null>(null);
   const [payments, setPayments] = useState<PaymentsRes | null>(null);
@@ -151,12 +133,14 @@ export default function Report() {
 
   const loadMeta = useCallback(async () => {
     if (!token) return;
-    const [cList, pList] = await Promise.all([
+    const [cList, pList, catList] = await Promise.all([
       apiFetch<CashierOpt[]>("/admin/cashiers", { token }),
       apiFetch<ProductOpt[]>("/admin/products", { token }),
+      apiFetch<string[]>("/admin/expense-categories", { token }),
     ]);
     setCashiers(ensureArray(cList));
     setProducts(ensureArray(pList));
+    setExpenseCategories(ensureArray(catList));
   }, [token]);
 
   const loadReport = useCallback(async () => {
@@ -326,7 +310,7 @@ export default function Report() {
               className="mt-0.5 w-full rounded-xl border border-slate-200 px-2 py-2 text-sm dark:border-slate-600 dark:bg-slate-800"
             >
               <option value="">Все</option>
-              {EXPENSE_CATEGORIES.map((c) => (
+              {expenseCategories.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>

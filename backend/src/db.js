@@ -3,6 +3,7 @@ import Database from "better-sqlite3";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import { initExpenseCategories } from "./expenseCategories.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = process.env.SQLITE_PATH || path.join(__dirname, "..", "data", "server.sqlite");
@@ -261,6 +262,7 @@ export function initDb() {
   `);
 
   seedLedgerAccounts();
+  initExpenseCategories();
 }
 
 function seedLedgerAccounts() {

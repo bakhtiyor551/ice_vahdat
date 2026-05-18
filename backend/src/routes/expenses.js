@@ -4,9 +4,19 @@ import { db } from "../db.js";
 import { recordExpenseInLedger } from "../ledger.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { formatExpenseReceipt, sendTelegramMessage } from "../telegram.js";
+import { listExpenseCategoryNames } from "../expenseCategories.js";
 
 export const expensesRouter = Router();
 expensesRouter.use(authMiddleware);
+
+expensesRouter.get("/categories", (_req, res) => {
+  try {
+    res.json(listExpenseCategoryNames());
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: String(e.message || e) });
+  }
+});
 
 function insertExpenseFromPayload(body, cashierId) {
   const localId = body.local_id;
